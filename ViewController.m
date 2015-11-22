@@ -52,7 +52,7 @@
     
     // configure scene view
     SCNView *scene_view = [[SCNView alloc]initWithFrame:self.view.bounds];
-    //scene_view.antialiasingMode = SCNAntialiasingModeMultisampling4X;
+    scene_view.antialiasingMode = SCNAntialiasingModeMultisampling4X;
     scene_view.backgroundColor = dark_gray;
     [self.view addSubview:scene_view];
     
@@ -70,7 +70,7 @@
     spot_light.type = SCNLightTypeSpot;
     spot_light.spotInnerAngle = 0.0;
     spot_light.spotOuterAngle = 90.0;
-    //spot_light.castsShadow = true;
+    spot_light.castsShadow = true;
     SCNNode *spot_node = [[SCNNode alloc]init];
     spot_node.light = spot_light;
     spot_node.position = SCNVector3Make(0.0, 10.0, 0.0);
@@ -138,7 +138,7 @@
     [scene.rootNode addChildNode:camera_node];
     
     SCNNode *center_node = [[SCNNode alloc]init];
-    center_node.position = SCNVector3Make(0.0, 0.0, 0.0);
+    center_node.position = SCNVector3Make(0.0, 0.0, 6.0);
     [scene.rootNode addChildNode:center_node];
     
     // configure camera position and eye
@@ -214,6 +214,13 @@
     [self.super_view addSubview:self.title_label];
     [self.super_view addSubview:self.artist_label];
     
+    // generate thread for handling sphere animations and rendering
+    NSThread *ball_thread = [[NSThread alloc]init];   // allocate thread to memory
+    [ball_thread start]; // start thread
+    
+    
+    // configure timer for updating spheres
+    self.update_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
     
     //**************************************************************************************
     
@@ -411,35 +418,31 @@
 {
     __weak typeof (self) weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
-        
-        // create new thread and push audio file to it for parsing
-        NSThread *ball_thread = [[NSThread alloc]initWithTarget:self selector:@selector(animate_from:) object:audioFile];   // intiialize thread
-        [ball_thread start]; // start thread
     });
 }
 
--(void)animate_from:(EZAudioFile *)audio_file
+-(void)animate
 {
-    if(audio_file != nil)
+    int NUM_BALLS = 25;
+    EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:NUM_BALLS];
+    float* data = [wave_data bufferForChannel:0];
+    
+    if(data != NULL)
     {
-        // sample from num balls points
-        int NUM_BALLS = 25;
-        EZAudioFloatData *wave_data = [audio_file getWaveformDataWithNumberOfPoints:NUM_BALLS];
-        
-        // just take data from first channel
-        float *data = [wave_data bufferForChannel:0];
-        
-        // for each data point, animate the corresponding ball
         for(int i = 0; i < NUM_BALLS; ++i)
         {
-            // get new height
-            float sphere_amplitude = data[i] * 50;
-            SCNNode *sphere = self.spheres[i];
+            printf("%f\n", data[i]);
+            
+            // calculate amplitude
+            float amplitude = data[i] * 100.0;
+            
+            // get corresponding sphere
+            SCNNode *sphere_node = self.spheres[i];
             
             // animate
             [SCNTransaction begin];
-            [SCNTransaction setAnimationDuration: 0.5];
-            sphere.position = SCNVector3Make(sphere.position.x, sphere_amplitude, sphere.position.y);
+            [SCNTransaction setAnimationDuration:0.5];
+            sphere_node.position = SCNVector3Make(sphere_node.position.x, amplitude, sphere_node.position.y);
             [SCNTransaction commit];
             
         }

@@ -19,6 +19,8 @@
 @property UILabel *artist_label;
 @property BOOL playing;
 @property NSMutableArray *spheres;
+@property NSThread *sphere_thread;
+@property NSTimer *update_timer;
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"lunar" ofType:@"MP3"]
 
 /**
