@@ -52,7 +52,7 @@
     
     // configure scene view
     SCNView *scene_view = [[SCNView alloc]initWithFrame:self.view.bounds];
-    scene_view.antialiasingMode = SCNAntialiasingModeMultisampling4X;
+    //scene_view.antialiasingMode = SCNAntialiasingModeMultisampling4X;
     scene_view.backgroundColor = dark_gray;
     [self.view addSubview:scene_view];
     
@@ -70,7 +70,7 @@
     spot_light.type = SCNLightTypeSpot;
     spot_light.spotInnerAngle = 0.0;
     spot_light.spotOuterAngle = 90.0;
-    spot_light.castsShadow = true;
+    //spot_light.castsShadow = true;
     SCNNode *spot_node = [[SCNNode alloc]init];
     spot_node.light = spot_light;
     spot_node.position = SCNVector3Make(0.0, 10.0, 0.0);
@@ -86,7 +86,7 @@
     CGFloat origin_x = -6.0;
     int num_rows = 5;
     int num_cols = 5;
-    NSMutableArray *spheres = [[NSMutableArray alloc]init];
+    self.spheres = [[NSMutableArray alloc]init];
     
     for(int r = 0; r < num_rows; ++r)
     {
@@ -111,7 +111,7 @@
             CGFloat y = r * step;
             sphere_node.position = SCNVector3Make(x, 0.5, y);
             [scene.rootNode addChildNode:sphere_node];
-            [spheres addObject:sphere_node];
+            [self.spheres addObject:sphere_node];
         }
     }
     
@@ -137,9 +137,13 @@
     [scene.rootNode addChildNode:spot_node];
     [scene.rootNode addChildNode:camera_node];
     
+    SCNNode *center_node = [[SCNNode alloc]init];
+    center_node.position = SCNVector3Make(0.0, 0.0, 0.0);
+    [scene.rootNode addChildNode:center_node];
+    
     // configure camera position and eye
     camera_node.position = SCNVector3Make(0.0, 10.0, 35.0);
-    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:spheres[12]];
+    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:center_node];
     constraint.gimbalLockEnabled = true;
     NSArray *constraints = @[constraint];
     camera_node.constraints = constraints;
@@ -397,9 +401,6 @@
         [weakSelf.audioPlot updateBuffer:buffer[0]
                           withBufferSize:bufferSize];
     });
-    
-    
-   printf("Buffer size: %i \n", bufferSize);
 }
 
 //------------------------------------------------------------------------------
@@ -411,24 +412,37 @@
     __weak typeof (self) weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        printf("Position: %i \n", framePosition);
         // create new thread and push audio file to it for parsing
-        NSThread *ball_thread = [[NSThread alloc]initWithTarget:self selector:@selector(get_wave_data_from:) object:audioFile];   // intiialize thread
+        NSThread *ball_thread = [[NSThread alloc]initWithTarget:self selector:@selector(animate_from:) object:audioFile];   // intiialize thread
         [ball_thread start]; // start thread
     });
 }
 
--(void)get_wave_data_from:(EZAudioFile *)audio_file
+-(void)animate_from:(EZAudioFile *)audio_file
 {
     if(audio_file != nil)
     {
-        printf("audio file not nil!");
+        // sample from num balls points
+        int NUM_BALLS = 25;
+        EZAudioFloatData *wave_data = [audio_file getWaveformDataWithNumberOfPoints:NUM_BALLS];
         
+        // just take data from first channel
+        float *data = [wave_data bufferForChannel:0];
         
-    }
-    else
-    {
-        printf("audio file is nil");
+        // for each data point, animate the corresponding ball
+        for(int i = 0; i < NUM_BALLS; ++i)
+        {
+            // get new height
+            float sphere_amplitude = data[i] * 50;
+            SCNNode *sphere = self.spheres[i];
+            
+            // animate
+            [SCNTransaction begin];
+            [SCNTransaction setAnimationDuration: 0.5];
+            sphere.position = SCNVector3Make(sphere.position.x, sphere_amplitude, sphere.position.y);
+            [SCNTransaction commit];
+            
+        }
     }
 }
 
