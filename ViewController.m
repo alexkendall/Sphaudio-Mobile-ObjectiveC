@@ -398,6 +398,8 @@
                           withBufferSize:bufferSize];
     });
     
+    
+   printf("Buffer size: %i \n", bufferSize);
 }
 
 //------------------------------------------------------------------------------
@@ -409,15 +411,25 @@
     __weak typeof (self) weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        /*
-        if (!weakSelf.positionSlider.touchInside)
-        {
-            weakSelf.positionSlider.value = (float)framePosition;
-        }
-        */
+        printf("Position: %i \n", framePosition);
+        // create new thread and push audio file to it for parsing
+        NSThread *ball_thread = [[NSThread alloc]initWithTarget:self selector:@selector(get_wave_data_from:) object:audioFile];   // intiialize thread
+        [ball_thread start]; // start thread
     });
-    
-    
+}
+
+-(void)get_wave_data_from:(EZAudioFile *)audio_file
+{
+    if(audio_file != nil)
+    {
+        printf("audio file not nil!");
+        
+        
+    }
+    else
+    {
+        printf("audio file is nil");
+    }
 }
 
 //------------------------------------------------------------------------------
