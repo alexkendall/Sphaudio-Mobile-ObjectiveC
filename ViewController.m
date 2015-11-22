@@ -220,6 +220,7 @@
     
     
     // configure timer for updating spheres
+    self.amp_points = [[NSMutableArray alloc]init];
     self.update_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
     
     //**************************************************************************************
@@ -421,34 +422,6 @@
     });
 }
 
--(void)animate
-{
-    int NUM_BALLS = 25;
-    EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:NUM_BALLS];
-    float* data = [wave_data bufferForChannel:0];
-    
-    if(data != NULL)
-    {
-        for(int i = 0; i < NUM_BALLS; ++i)
-        {
-            printf("%f\n", data[i]);
-            
-            // calculate amplitude
-            float amplitude = data[i] * 100.0;
-            
-            // get corresponding sphere
-            SCNNode *sphere_node = self.spheres[i];
-            
-            // animate
-            [SCNTransaction begin];
-            [SCNTransaction setAnimationDuration:0.5];
-            sphere_node.position = SCNVector3Make(sphere_node.position.x, amplitude, sphere_node.position.y);
-            [SCNTransaction commit];
-            
-        }
-    }
-}
-
 //------------------------------------------------------------------------------
 #pragma mark - Utility
 //------------------------------------------------------------------------------
@@ -475,6 +448,38 @@
     self.audioPlot.shouldMirror = YES;
 }
 
+//------------------------------------------------------------------------------
+
+/*
+ Sample num random data points from wavelength 
+ */
+- (void)animate
+{
+    EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:1024];
+    float* data = [wave_data bufferForChannel:0];
+    int NUM_SPHERES = 25;
+    if(data != nil)
+    {
+        printf("sampling rand!");
+        for(int i = 0; i < NUM_SPHERES; ++i)
+        {
+            // sample data point
+            int sample = (arc4random() % 1023);
+            float data_point = data[sample];
+            float new_amp = 50.0 * data_point;
+            
+            // get corresponding sphere
+            SCNNode *sphere_node = self.spheres[i];
+            
+            // animate
+            [SCNTransaction begin];
+            [SCNTransaction setAnimationDuration:1.5];
+            sphere_node.position = SCNVector3Make(sphere_node.position.x, new_amp, sphere_node.position.y);
+            [SCNTransaction commit];
+
+        }
+    }
+}
 //------------------------------------------------------------------------------
 
 @end

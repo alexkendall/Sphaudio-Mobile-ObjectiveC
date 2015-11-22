@@ -21,6 +21,7 @@
 @property NSMutableArray *spheres;
 @property NSThread *sphere_thread;
 @property NSTimer *update_timer;
+@property NSMutableArray *amp_points;
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"lunar" ofType:@"MP3"]
 
 /**
