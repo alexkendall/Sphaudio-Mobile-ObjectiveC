@@ -10,6 +10,8 @@
 #import "EZAudioFile.h"
 #import "EZAudioPlayer.h"
 #import "EZAudioPlot.h"
+#import "PlayButton.h"
+
 @import UIKit;
 @import SceneKit;
 
@@ -142,7 +144,7 @@
     [scene.rootNode addChildNode:center_node];
     
     // configure camera position and eye
-    camera_node.position = SCNVector3Make(0.0, 10.0, 35.0);
+    camera_node.position = SCNVector3Make(0.0, 12.0, 40.0);
     SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:center_node];
     constraint.gimbalLockEnabled = true;
     NSArray *constraints = @[constraint];
@@ -157,6 +159,7 @@
     CGFloat offset_y = self.super_view.bounds.size.height * 0.05;
     
     // configure play button
+    /*
     self.play_button = [UIButton buttonWithType:UIButtonTypeCustom];
     self.play_button.frame = CGRectMake(offset_x, offset_y, width, height);
     self.play_button.backgroundColor = [UIColor whiteColor];
@@ -167,6 +170,7 @@
     [self.play_button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self.play_button setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
     [self.super_view addSubview:self.play_button];
+    */
     
     // add targets for playing song
     [self.play_button addTarget:self action:@selector(play_song) forControlEvents:UIControlEventTouchUpInside];
@@ -215,13 +219,23 @@
     [self.super_view addSubview:self.artist_label];
     
     // generate thread for handling sphere animations and rendering
-    NSThread *ball_thread = [[NSThread alloc]init];   // allocate thread to memory
-    [ball_thread start]; // start thread
+    NSThread *ball_thread = [[NSThread alloc]initWithTarget:self selector:@selector(animate) object:nil];
+    [self animate];
     
     
     // configure timer for updating spheres
-    self.amp_points = [[NSMutableArray alloc]init];
-    self.update_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
+    //self.amp_points = [[NSMutableArray alloc]init];
+    //self.update_timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(animate) userInfo:nil repeats:true];
+    
+    // configure play button
+    self.play_button = [[PlayButton alloc]init];
+    CGFloat play_dim = self.view.frame.size.width * 0.075;
+    CGFloat play_offset_x = (self.view.frame.size.width - play_dim) * 0.5;
+    CGFloat play_offset_y = self.view.frame.size.height * 0.7;
+    //self.play_button.backgroundColor = [UIColor whiteColor];
+    self.play_button.frame = CGRectMake(play_offset_x, play_offset_y, play_dim, play_dim);
+    [self.view addSubview:self.play_button];
+    
     
     //**************************************************************************************
     
@@ -455,11 +469,18 @@
  */
 - (void)animate
 {
+    //self.update_timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(animate) userInfo:nil repeats:true];
+    
+    //printf("animate!");
+    
+    
+    
     EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:1024];
     float* data = [wave_data bufferForChannel:0];
     int NUM_SPHERES = 25;
     if(data != nil)
     {
+       
         printf("sampling rand!");
         for(int i = 0; i < NUM_SPHERES; ++i)
         {
@@ -472,28 +493,32 @@
             SCNNode *sphere_node = self.spheres[i];
             
             // animate
+            
+        
             [SCNTransaction begin];
-            [SCNTransaction setAnimationDuration:1.5];
+            [SCNTransaction setAnimationDuration:0.5];
             sphere_node.position = SCNVector3Make(sphere_node.position.x, new_amp, sphere_node.position.y);
             [SCNTransaction commit];
-
+            
+            [SCNTransaction begin];
+            [SCNTransaction setAnimationDuration:0.5];
+            sphere_node.position = SCNVector3Make(sphere_node.position.x, 0.5, sphere_node.position.y);
+        
+            
+            /*
+            [SCNTransaction setCompletionBlock:^
+            {
+                [SCNTransaction begin];
+                sphere_node.position = SCNVector3Make(sphere_node.position.x, new_amp, sphere_node.position.y);
+                [SCNTransaction commit];
+            }];
+            [SCNTransaction commit];
+             */
         }
+        
     }
+
 }
 //------------------------------------------------------------------------------
 
 @end
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -10,11 +10,12 @@
 #import "EZAudioFile.h"
 #import "EZAudioPlayer.h"
 #import "EZAudio.h"
+#import "PlayButton.h"
 
 @interface ViewController : UIViewController
 
 @property UIView* super_view;
-@property UIButton* play_button;
+@property PlayButton* play_button;
 @property UILabel *title_label;
 @property UILabel *artist_label;
 @property BOOL playing;
@@ -22,6 +23,7 @@
 @property NSThread *sphere_thread;
 @property NSTimer *update_timer;
 @property NSMutableArray *amp_points;
+
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"lunar" ofType:@"MP3"]
 
 /**
