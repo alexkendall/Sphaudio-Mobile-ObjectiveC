@@ -11,6 +11,8 @@
 #import "EZAudioPlayer.h"
 #import "EZAudioPlot.h"
 #import "PlayButton.h"
+#import "NextButton.h"
+
 
 @import UIKit;
 @import SceneKit;
@@ -232,10 +234,32 @@
     CGFloat play_dim = self.view.frame.size.width * 0.075;
     CGFloat play_offset_x = (self.view.frame.size.width - play_dim) * 0.5;
     CGFloat play_offset_y = self.view.frame.size.height * 0.7;
-    //self.play_button.backgroundColor = [UIColor whiteColor];
     self.play_button.frame = CGRectMake(play_offset_x, play_offset_y, play_dim, play_dim);
+    
+    // add target to toggle play on and off
+    [self.play_button addTarget:self action:@selector(toggle_play) forControlEvents:UIControlEventTouchUpInside];
+    
+    // set state
+    [self.play_button set_playing];
+    
+    // add to view hiearchy
     [self.view addSubview:self.play_button];
     
+    // configure next button
+    self.next_button = [[NextButton alloc]init];
+    CGFloat next_dim = self.view.frame.size.width * 0.06;
+    CGFloat next_offset_x = (self.view.frame.size.width - next_dim) * 0.5 + (play_dim * 3.0);
+    CGFloat next_offset_y = self.view.frame.size.height * 0.705;
+    self.next_button.frame = CGRectMake(next_offset_x, next_offset_y, next_dim, next_dim);
+    [self.view addSubview:self.next_button];
+    
+    // configure previous button
+    self.prev_button = [[PrevButton alloc]init];
+    CGFloat prev_dim = self.view.frame.size.width * 0.06;
+    CGFloat prev_offset_x = (self.view.frame.size.width - next_dim) * 0.5 - (play_dim * 3.0);
+    CGFloat prev_offset_y = self.view.frame.size.height * 0.705;
+    self.prev_button.frame = CGRectMake(prev_offset_x, prev_offset_y, prev_dim, prev_dim);
+    [self.view addSubview:self.prev_button];
     
     //**************************************************************************************
     
@@ -460,6 +484,22 @@
     self.audioPlot.plotType = EZPlotTypeRolling;
     self.audioPlot.shouldFill = YES;
     self.audioPlot.shouldMirror = YES;
+}
+
+//------------------------------------------------------------------------------
+
+-(void)toggle_play
+{
+    if(self.playing)
+    {
+        self.playing = false;
+        [self.player pause];
+    }
+    else
+    {
+        self.playing = true;
+        [self.player play];
+    }
 }
 
 //------------------------------------------------------------------------------

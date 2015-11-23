@@ -11,11 +11,15 @@
 #import "EZAudioPlayer.h"
 #import "EZAudio.h"
 #import "PlayButton.h"
+#import "NextButton.h"
+#import "PrevButton.h"
 
 @interface ViewController : UIViewController
 
 @property UIView* super_view;
-@property PlayButton* play_button;
+@property PlayButton *play_button;
+@property NextButton *next_button;
+@property PrevButton *prev_button;
 @property UILabel *title_label;
 @property UILabel *artist_label;
 @property BOOL playing;

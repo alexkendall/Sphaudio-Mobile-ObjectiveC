@@ -9,13 +9,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface PlayButton : UIButton
-
-@property bool *is_playing;
-@property UIBezierPath *path;
-
--(void)set_paused;
--(void)set_playing;
--(void)toggle_play;
+@interface NextButton : UIButton
 
 @end
