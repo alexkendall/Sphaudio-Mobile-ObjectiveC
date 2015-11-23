@@ -261,6 +261,14 @@
     self.prev_button.frame = CGRectMake(prev_offset_x, prev_offset_y, prev_dim, prev_dim);
     [self.view addSubview:self.prev_button];
     
+    // configure navigation button
+    self.nav_bar = [[NavBar alloc]init];
+    CGFloat nav_dim = self.view.frame.size.width * 0.07;
+    CGFloat margin = self.view.frame.size.width * 0.05;
+    self.nav_bar.frame = CGRectMake(margin, margin, nav_dim * 1.25, nav_dim);
+    [self.nav_bar addTarget:self.nav_bar action:@selector(toggle) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.nav_bar];
+    
     //**************************************************************************************
     
     NSLog(@"outputs: %@", [EZAudioDevice outputDevices]);
@@ -270,7 +278,6 @@
     //
     self.player = [EZAudioPlayer audioPlayerWithDelegate:self];
     self.player.shouldLoop = YES;
-    
     // Override the output to the speaker
     [session overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&error];
     if (error)
@@ -423,6 +430,7 @@
     //
     [self.player setAudioFile:self.audioFile];
     
+    
 }
 
 //------------------------------------------------------------------------------
@@ -469,6 +477,7 @@
  */
 - (void)drawBufferPlot
 {
+    printf("BUFFER");
     self.audioPlot.plotType = EZPlotTypeBuffer;
     self.audioPlot.shouldMirror = NO;
     self.audioPlot.shouldFill = NO;
@@ -481,8 +490,9 @@
  */
 - (void)drawRollingPlot
 {
+    printf("ROLLING");
     self.audioPlot.plotType = EZPlotTypeRolling;
-    self.audioPlot.shouldFill = YES;
+    self.audioPlot.shouldFill = NO;
     self.audioPlot.shouldMirror = YES;
 }
 
