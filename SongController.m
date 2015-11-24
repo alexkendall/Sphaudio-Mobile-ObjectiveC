@@ -54,6 +54,8 @@
     [self.view addSubview:self.table_view];
     self.table_view.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.table_view.backgroundColor = dark_gray;
+    
+
 }
 
 #pragma mark - UITableViewDelegate
@@ -93,6 +95,8 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     return cell;
 }
 
+//------------------------------------------------------------------------------
+
 - (NSInteger)tableView:(UITableView *)tableView
  numberOfRowsInSection:(NSInteger)section
 {
@@ -100,7 +104,29 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     return self.songs_array.count;
 }
 
+#pragma mark - UISearchBarDelegate
+
+- (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
+{
+    printf("search button clicked");
+}
+
+
+- (void)searchBar:(UISearchBar *)searchBar
+    textDidChange:(NSString *)searchText
+{
+    printf("text changed");
+}
+
 @end
+
+
+
+
+
+
+
+
 
 
 
