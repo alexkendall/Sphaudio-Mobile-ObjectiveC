@@ -14,6 +14,7 @@
 #import "NextButton.h"
 #import "PrevButton.h"
 #import "NavBar.h"
+#import "SongController.h"
 @interface ViewController : UIViewController
 
 @property UIView* super_view;
@@ -23,11 +24,13 @@
 @property NavBar *nav_bar;
 @property UILabel *title_label;
 @property UILabel *artist_label;
-@property BOOL playing;
+@property bool playing;
 @property NSMutableArray *spheres;
 @property NSThread *sphere_thread;
 @property NSTimer *update_timer;
 @property NSMutableArray *amp_points;
+@property SongController *song_controller;
+@property bool queue_is_up;
 
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"lunar" ofType:@"MP3"]
 

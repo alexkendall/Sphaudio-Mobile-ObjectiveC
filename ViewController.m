@@ -17,11 +17,6 @@
 @import UIKit;
 @import SceneKit;
 
-@interface ViewController ()
-
-
-@end
-
 @implementation ViewController
 
 - (void)viewDidLoad {
@@ -267,7 +262,12 @@
     CGFloat margin = self.view.frame.size.width * 0.05;
     self.nav_bar.frame = CGRectMake(margin, margin, nav_dim * 1.25, nav_dim);
     [self.nav_bar addTarget:self.nav_bar action:@selector(toggle) forControlEvents:UIControlEventTouchUpInside];
+    [self.nav_bar addTarget:self action:@selector(toggle_queue) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.nav_bar];
+    
+    // set queue is up to false
+    self.song_controller = [[SongController alloc]init];
+    self.queue_is_up = false;
     
     //**************************************************************************************
     
@@ -509,6 +509,26 @@
     {
         self.playing = true;
         [self.player play];
+    }
+}
+
+//------------------------------------------------------------------------------
+
+-(void)toggle_queue
+{
+    printf("Bringing up queue");
+    
+    if(self.queue_is_up)
+    {
+        // take down song controller
+        self.queue_is_up = false;
+        [self.song_controller.view removeFromSuperview];
+    }
+    else
+    {
+        // put up song controller
+        self.queue_is_up = true;
+        [self.view addSubview:self.song_controller.view];
     }
 }
 
