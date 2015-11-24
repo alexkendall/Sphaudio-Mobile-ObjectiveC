@@ -15,6 +15,7 @@
 
 @property UISearchBar *search_bar;
 @property UITableView *table_view;
+@property NSMutableArray *songs_array;
 
 @end
 

@@ -523,6 +523,7 @@
         // take down song controller
         self.queue_is_up = false;
         [self.song_controller.view removeFromSuperview];
+        self.song_controller.table_view.reloadData;
     }
     else
     {
@@ -589,6 +590,5 @@
     }
 
 }
-//------------------------------------------------------------------------------
 
 @end
