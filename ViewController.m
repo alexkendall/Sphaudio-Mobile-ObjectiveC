@@ -300,7 +300,6 @@
      */
     [self openFileWithFilePathURL:[NSURL fileURLWithPath:kAudioFileDefault]];
 
-    
     //**************************************************************************************
     
 }
@@ -524,6 +523,7 @@
         self.queue_is_up = false;
         [self.song_controller.view removeFromSuperview];
         self.song_controller.table_view.reloadData;
+        [self.song_controller reset_state];
     }
     else
     {
@@ -531,6 +531,13 @@
         self.queue_is_up = true;
         [self.view addSubview:self.song_controller.view];
     }
+}
+
+//------------------------------------------------------------------------------
+
+-(void)play_song_with:(NSURL*)url
+{
+    return;
 }
 
 //------------------------------------------------------------------------------

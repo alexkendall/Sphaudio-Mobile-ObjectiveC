@@ -16,6 +16,11 @@
 @property UISearchBar *search_bar;
 @property UITableView *table_view;
 @property NSMutableArray *songs_array;
+@property int song_index;
+@property NSMutableArray* queried_refs;
+@property bool is_searching;
+
+- (void)reset_state;
 
 @end
 
