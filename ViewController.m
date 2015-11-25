@@ -269,6 +269,8 @@
     self.song_controller = [[SongController alloc]init];
     self.queue_is_up = false;
     
+    
+    
     //**************************************************************************************
     
     NSLog(@"outputs: %@", [EZAudioDevice outputDevices]);
@@ -503,11 +505,13 @@
     {
         self.playing = false;
         [self.player pause];
+        [self.update_timer invalidate];
     }
     else
     {
         self.playing = true;
         [self.player play];
+        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
     }
 }
 
@@ -547,53 +551,97 @@
  */
 - (void)animate
 {
-    //self.update_timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(animate) userInfo:nil repeats:true];
-    
-    //printf("animate!");
-    
-    
+    printf("animate!");
     
     EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:1024];
     float* data = [wave_data bufferForChannel:0];
     int NUM_SPHERES = 25;
+    int SAMPLE_RANGE = ceil(1024.0 / 25.0);
+    
     if(data != nil)
     {
-       
         printf("sampling rand!");
+        
+        float max_area = 0.0;
+        
+        // pass 1 get max area, use this for speed
         for(int i = 0; i < NUM_SPHERES; ++i)
         {
-            // sample data point
-            int sample = (arc4random() % 1023);
-            float data_point = data[sample];
-            float new_amp = 50.0 * data_point;
+            // set sample start and end indexes
+            int start_index = i * SAMPLE_RANGE;
+            int end_index = start_index + SAMPLE_RANGE;
+            float area = 0;
             
-            // get corresponding sphere
-            SCNNode *sphere_node = self.spheres[i];
-            
-            // animate
-            
-        
-            [SCNTransaction begin];
-            [SCNTransaction setAnimationDuration:0.5];
-            sphere_node.position = SCNVector3Make(sphere_node.position.x, new_amp, sphere_node.position.y);
-            [SCNTransaction commit];
-            
-            [SCNTransaction begin];
-            [SCNTransaction setAnimationDuration:0.5];
-            sphere_node.position = SCNVector3Make(sphere_node.position.x, 0.5, sphere_node.position.y);
-        
-            
-            /*
-            [SCNTransaction setCompletionBlock:^
+            // sample points in range, take peak and area
+            for(int i = start_index; i < end_index; ++i)
             {
-                [SCNTransaction begin];
-                sphere_node.position = SCNVector3Make(sphere_node.position.x, new_amp, sphere_node.position.y);
-                [SCNTransaction commit];
-            }];
-            [SCNTransaction commit];
-             */
+                float this_point = fabs(data[i]);
+                area += this_point;
+            }
+            if(area > max_area)
+            {
+                max_area = area;
+            }
         }
         
+        // get max area... ball responsible for this frequency will be in the air the longest
+        float sample_speed = 1.75;
+        float speed_mult = sample_speed / max_area;
+        
+        // pass 2 use max area accordingly
+        for(int i = 0; i < NUM_SPHERES; ++i)
+        {
+            // set sample start and end indexes
+            int start_index = i * SAMPLE_RANGE;
+            int end_index = start_index + SAMPLE_RANGE;
+            float area = 0;
+            float max = 0;
+            
+            // sample points in range, take peak and area
+            for(int i = start_index; i < end_index; ++i)
+            {
+                float this_point = fabs(data[i]);
+                area += this_point;
+                if(this_point > max)
+                {
+                    max = this_point;
+                }
+            }
+            
+            printf("Amplitude: %f\nArea: %f\n", max, area);
+            
+
+            // measure y amplitude
+            float y_amplitude = max * 50.0;
+            
+            // use half speed for ball up, half for ball down
+            float ball_speed = area * speed_mult * 0.5;
+            
+            
+            SCNMaterial *green_material = [[SCNMaterial alloc]init];
+            green_material.diffuse.contents = [UIColor greenColor];
+            
+            SCNMaterial *yellow_material = [[SCNMaterial alloc]init];
+            yellow_material.diffuse.contents = [UIColor yellowColor];
+            
+            [SCNTransaction begin];
+            [SCNTransaction setAnimationDuration:ball_speed];
+            SCNNode *sphere = self.spheres[i];
+            sphere.position = SCNVector3Make(sphere.position.x, y_amplitude, sphere.position.z);
+            sphere.geometry.materials[0].diffuse.contents = [UIColor yellowColor];
+            [SCNTransaction setCompletionBlock:^
+             {
+                 [SCNTransaction begin];
+                 [SCNTransaction setAnimationDuration:ball_speed];
+                 sphere.position = SCNVector3Make(sphere.position.x, 0.5, sphere.position.z);
+                 sphere.geometry.materials[0].diffuse.contents = [UIColor greenColor];
+                 [SCNTransaction commit];
+                 
+             }];
+            [SCNTransaction commit];
+            
+            
+        }
     }
 
 }
