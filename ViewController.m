@@ -15,6 +15,7 @@
 #include "Interpolate.h"
 
 
+@import MediaPlayer;
 @import UIKit;
 @import SceneKit;
 
@@ -199,7 +200,7 @@
     CGFloat label_width = self.view.bounds.size.width;
     CGFloat title_y = self.view.bounds.size.height * 0.2;
     self.title_label = [[UILabel alloc]initWithFrame:CGRectMake(0.0, title_y, label_width, label_height)];
-    [self.title_label setText:@"Welcome to Lunar Industries"];
+    [self.title_label setText:@"The Motion (Instrumental)"];
     [self.title_label setTextColor:[UIColor whiteColor]];
     [self.title_label setTextAlignment:NSTextAlignmentCenter];
     self.title_label.font = [UIFont boldSystemFontOfSize:18.0];
@@ -207,7 +208,7 @@
     // configure song artest label
     CGFloat artist_y = title_y + 30.0;
     self.artist_label = [[UILabel alloc]initWithFrame:CGRectMake(0.0, artist_y, label_width, label_height)];
-    [self.artist_label setText:@"Clint Mansell"];
+    [self.artist_label setText:@"Drake"];
     [self.artist_label setTextColor:[UIColor whiteColor]];
     [self.artist_label setTextAlignment:NSTextAlignmentCenter];
     self.artist_label.font = [UIFont systemFontOfSize:17.0];
@@ -269,7 +270,7 @@
     // set queue is up to false
     self.song_controller = [[SongController alloc]init];
     self.queue_is_up = false;
-    
+    self.song_indx = 0;
     
     
     //**************************************************************************************
@@ -314,6 +315,7 @@
 
 -(void)play_song
 {
+    
     if(self.playing)
     {
         
@@ -510,9 +512,20 @@
     }
     else
     {
+        if(self.song_controller.songs_array.count > 0)
+        {
+            MPMediaItem *song = self.song_controller.songs_array[0];
+            [self.player openMediaItem:song completion:^(EZAudioFile *audioFile,
+                                                                NSError *error)
+            {
+                NSLog(@"audio file: %@, error: %@", audioFile, error);
+            }];
+        }
+        
+        //self.player.audioFile = [[EZAudioFile alloc]initWithURL:song_url delegate:self];
         self.playing = true;
         [self.player play];
-        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
+        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:3.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
     }
 }
 
@@ -552,7 +565,7 @@
  */
 - (void)animate
 {
-    printf("animate!");
+    //printf("animate!");
     
     EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:1024];
     float* data = [wave_data bufferForChannel:0];
@@ -586,7 +599,7 @@
         }
         
         // get max area... ball responsible for this frequency will be in the air the longest
-        float sample_speed = 1.75;
+        float sample_speed = 2.0;
         float speed_mult = sample_speed / max_area;
         
         // color array for interpolation
@@ -612,11 +625,10 @@
                 }
             }
             
-            printf("Amplitude: %f\nArea: %f\n", max, area);
-            
+            //printf("Amplitude: %f\nArea: %f\n", max, area);
 
             // measure y amplitude
-            float y_amplitude = max * 50.0;
+            float y_amplitude = max * 40.0;
             
             // use half speed for ball up, half for ball down
             float ball_speed = area * speed_mult * 0.5;
@@ -625,16 +637,17 @@
             
             float t_value = 0.0;
             t_value = area / max_area;
-            UIColor *up_color, *down_color;
-            //interpolate(t_value, freq_colors, up_color, down_color);
-            
+            UIColor *up_color = [[UIColor alloc]init];
+            UIColor *down_color = [[UIColor alloc]init];
+
+        
             UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:233.0 / 255.0 blue:1.0 alpha:1.0];
             UIColor *teal = [[UIColor alloc]initWithRed:0.0 green:159.0 / 255.0 blue:165.0 / 255.0 alpha:1.0];
             UIColor *soft_green = [[UIColor alloc]initWithRed:0.0 green:179.0 / 255.0 blue:97.0 / 255.0 alpha:1.0];
             UIColor *yellow_orange = [[UIColor alloc]initWithRed:1.0 green:198.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
             UIColor *red_orange = [[UIColor alloc]initWithRed:1.0 green:107.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
             UIColor *bright_red = [[UIColor alloc]initWithRed:1.0 green:23.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
-            UIColor *white = [[UIColor alloc]initWithRed:1.0 green:1.0 blue:1.0 alpha:1.0];
+            UIColor *dark_red = [[UIColor alloc]initWithRed:0.5 green:0.0 blue:0.0 alpha:1.0];
             if(t_value < 0.17)
             {
                 down_color = light_blue;
@@ -663,9 +676,8 @@
             else
             {
                 down_color = bright_red;
-                up_color = white;
+                up_color = dark_red;
             }
-
             
             [SCNTransaction begin];
             [SCNTransaction setAnimationDuration:ball_speed];
@@ -682,8 +694,6 @@
                  
              }];
             [SCNTransaction commit];
-            
-            
         }
     }
 

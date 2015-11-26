@@ -32,8 +32,9 @@
 @property NSMutableArray *amp_points;
 @property SongController *song_controller;
 @property bool queue_is_up;
+@property int song_indx;
 
-#define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"lunar" ofType:@"MP3"]
+#define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"motion" ofType:@"mp3"]
 
 /**
  An EZAudioFile that will be used to load the audio file at the file path specified
