@@ -12,6 +12,7 @@
 #import "EZAudioPlot.h"
 #import "PlayButton.h"
 #import "NextButton.h"
+#include "Interpolate.h"
 
 
 @import UIKit;
@@ -190,7 +191,7 @@
     self.audioPlot.shouldMirror    = YES;
     
     // add plot to subview
-    [self.super_view addSubview:self.audioPlot];
+    //[self.super_view addSubview:self.audioPlot];
     
     
     // configure song title label
@@ -588,6 +589,9 @@
         float sample_speed = 1.75;
         float speed_mult = sample_speed / max_area;
         
+        // color array for interpolation
+        NSArray *freq_colors = @[[UIColor blueColor], [UIColor greenColor], [UIColor yellowColor], [UIColor redColor]];
+        
         // pass 2 use max area accordingly
         for(int i = 0; i < NUM_SPHERES; ++i)
         {
@@ -617,24 +621,63 @@
             // use half speed for ball up, half for ball down
             float ball_speed = area * speed_mult * 0.5;
             
+            // determine ball color according to frequency
             
-            SCNMaterial *green_material = [[SCNMaterial alloc]init];
-            green_material.diffuse.contents = [UIColor greenColor];
+            float t_value = 0.0;
+            t_value = area / max_area;
+            UIColor *up_color, *down_color;
+            //interpolate(t_value, freq_colors, up_color, down_color);
             
-            SCNMaterial *yellow_material = [[SCNMaterial alloc]init];
-            yellow_material.diffuse.contents = [UIColor yellowColor];
+            UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:233.0 / 255.0 blue:1.0 alpha:1.0];
+            UIColor *teal = [[UIColor alloc]initWithRed:0.0 green:159.0 / 255.0 blue:165.0 / 255.0 alpha:1.0];
+            UIColor *soft_green = [[UIColor alloc]initWithRed:0.0 green:179.0 / 255.0 blue:97.0 / 255.0 alpha:1.0];
+            UIColor *yellow_orange = [[UIColor alloc]initWithRed:1.0 green:198.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
+            UIColor *red_orange = [[UIColor alloc]initWithRed:1.0 green:107.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
+            UIColor *bright_red = [[UIColor alloc]initWithRed:1.0 green:23.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
+            UIColor *white = [[UIColor alloc]initWithRed:1.0 green:1.0 blue:1.0 alpha:1.0];
+            if(t_value < 0.17)
+            {
+                down_color = light_blue;
+                up_color = teal;
+            }
+            else if(t_value < 0.34)
+            {
+                down_color = teal;
+                up_color = soft_green;
+            }
+            else if(t_value < 0.5)
+            {
+                down_color = soft_green;
+                up_color = yellow_orange;
+            }
+            else if(t_value < 0.68)
+            {
+                down_color = yellow_orange;
+                up_color = red_orange;
+            }
+            else if(t_value < 0.85)
+            {
+                down_color = red_orange;
+                up_color = bright_red;
+            }
+            else
+            {
+                down_color = bright_red;
+                up_color = white;
+            }
+
             
             [SCNTransaction begin];
             [SCNTransaction setAnimationDuration:ball_speed];
             SCNNode *sphere = self.spheres[i];
             sphere.position = SCNVector3Make(sphere.position.x, y_amplitude, sphere.position.z);
-            sphere.geometry.materials[0].diffuse.contents = [UIColor yellowColor];
+            sphere.geometry.materials[0].diffuse.contents = up_color;
             [SCNTransaction setCompletionBlock:^
              {
                  [SCNTransaction begin];
                  [SCNTransaction setAnimationDuration:ball_speed];
                  sphere.position = SCNVector3Make(sphere.position.x, 0.5, sphere.position.z);
-                 sphere.geometry.materials[0].diffuse.contents = [UIColor greenColor];
+                 sphere.geometry.materials[0].diffuse.contents = down_color;
                  [SCNTransaction commit];
                  
              }];

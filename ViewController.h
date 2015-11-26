@@ -15,6 +15,7 @@
 #import "PrevButton.h"
 #import "NavBar.h"
 #import "SongController.h"
+#import "Interpolate.h"
 @interface ViewController : UIViewController
 
 @property UIView* super_view;
