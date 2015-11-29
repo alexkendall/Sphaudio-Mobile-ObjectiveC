@@ -33,6 +33,7 @@
 @property SongController *song_controller;
 @property bool queue_is_up;
 @property int song_indx;
+@property NSTimer *animate_timer;
 
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"motion" ofType:@"mp3"]
 

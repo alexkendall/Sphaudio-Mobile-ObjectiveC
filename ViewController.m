@@ -13,7 +13,7 @@
 #import "PlayButton.h"
 #import "NextButton.h"
 #include "Interpolate.h"
-
+#include "SPHNode.h"
 
 @import MediaPlayer;
 @import UIKit;
@@ -98,12 +98,13 @@
             sphere_geometry.radius = 1.0;
             
             // sphere node
-            SCNNode *sphere_node = [[SCNNode alloc]init];
+            SCNNode *sphere_node = [[SPHNode alloc]init];
             sphere_node.geometry = sphere_geometry;
             
             // sphere material
+            UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:233.0 / 255.0 blue:1.0 alpha:1.0];
             SCNMaterial *sphere_material = [[SCNMaterial alloc]init];
-            sphere_material.diffuse.contents = [UIColor greenColor];
+            sphere_material.diffuse.contents = light_blue;
             
             NSArray *materials = @[sphere_material];
             sphere_geometry.materials = materials;
@@ -303,6 +304,7 @@
      Try opening the sample file
      */
     [self openFileWithFilePathURL:[NSURL fileURLWithPath:kAudioFileDefault]];
+    
 
     //**************************************************************************************
     
@@ -434,7 +436,6 @@
     //
     [self.player setAudioFile:self.audioFile];
     
-    
 }
 
 //------------------------------------------------------------------------------
@@ -504,32 +505,40 @@
 
 -(void)toggle_play
 {
+    printf("\nPlay toggle\n");
+    
     if(self.playing)
     {
         self.playing = false;
         [self.player pause];
         [self.update_timer invalidate];
+        [self.animate_timer invalidate];
     }
     else
     {
-        if(self.song_controller.songs_array.count > 0)
-        {
-            MPMediaItem *song = self.song_controller.songs_array[0];
-            [self.player openMediaItem:song completion:^(EZAudioFile *audioFile,
-                                                                NSError *error)
-            {
-                NSLog(@"audio file: %@, error: %@", audioFile, error);
-            }];
-        }
-        
         //self.player.audioFile = [[EZAudioFile alloc]initWithURL:song_url delegate:self];
         self.playing = true;
         [self.player play];
-        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:3.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
+        
+        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:1.25 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
+        [self performSelectorInBackground:@selector(update_timer) withObject:nil];
+        
+        
+        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:2.5 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
     }
 }
 
 //------------------------------------------------------------------------------
+
+-(void)begin_animation
+{
+    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:1.5 target:self selector:@selector(animate) userInfo:nil repeats:true];
+}
+
+-(void) begin_retrieval
+{
+    [self performSelectorInBackground:@selector(get_data) withObject:nil];
+}
 
 -(void)toggle_queue
 {
@@ -553,29 +562,34 @@
 
 //------------------------------------------------------------------------------
 
--(void)play_song_with:(NSURL*)url
+-(void)test_play
 {
-    return;
+    [self.song_controller.table_view reloadData];
+    if(self.song_controller.songs_array.count > 0)
+    {
+        MPMediaItem *song = self.song_controller.songs_array[0];
+        [self.player openMediaItem:song completion:^(EZAudioFile *audioFile,
+                                                     NSError *error)
+         {
+             NSLog(@"audio file: %@, error: %@", audioFile, error);
+         }];
+    }
 }
 
 //------------------------------------------------------------------------------
 
-/*
- Sample num random data points from wavelength 
- */
-- (void)animate
+- (void)get_data
 {
-    //printf("animate!");
+    NSDate *methodStart = [NSDate date];
     
-    EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:1024];
+    int NUM_POINTS = 1024;
+    EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:NUM_POINTS];
     float* data = [wave_data bufferForChannel:0];
     int NUM_SPHERES = 25;
-    int SAMPLE_RANGE = ceil(1024.0 / 25.0);
+    int SAMPLE_RANGE = ceil(NUM_POINTS / 25.0);
     
     if(data != nil)
     {
-        printf("sampling rand!");
-        
         float max_area = 0.0;
         
         // pass 1 get max area, use this for speed
@@ -599,7 +613,7 @@
         }
         
         // get max area... ball responsible for this frequency will be in the air the longest
-        float sample_speed = 2.0;
+        float sample_speed = 1.5;
         float speed_mult = sample_speed / max_area;
         
         // color array for interpolation
@@ -626,7 +640,7 @@
             }
             
             //printf("Amplitude: %f\nArea: %f\n", max, area);
-
+            
             // measure y amplitude
             float y_amplitude = max * 40.0;
             
@@ -639,8 +653,8 @@
             t_value = area / max_area;
             UIColor *up_color = [[UIColor alloc]init];
             UIColor *down_color = [[UIColor alloc]init];
-
-        
+            
+            
             UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:233.0 / 255.0 blue:1.0 alpha:1.0];
             UIColor *teal = [[UIColor alloc]initWithRed:0.0 green:159.0 / 255.0 blue:165.0 / 255.0 alpha:1.0];
             UIColor *soft_green = [[UIColor alloc]initWithRed:0.0 green:179.0 / 255.0 blue:97.0 / 255.0 alpha:1.0];
@@ -679,24 +693,45 @@
                 up_color = dark_red;
             }
             
-            [SCNTransaction begin];
-            [SCNTransaction setAnimationDuration:ball_speed];
-            SCNNode *sphere = self.spheres[i];
-            sphere.position = SCNVector3Make(sphere.position.x, y_amplitude, sphere.position.z);
-            sphere.geometry.materials[0].diffuse.contents = up_color;
-            [SCNTransaction setCompletionBlock:^
-             {
-                 [SCNTransaction begin];
-                 [SCNTransaction setAnimationDuration:ball_speed];
-                 sphere.position = SCNVector3Make(sphere.position.x, 0.5, sphere.position.z);
-                 sphere.geometry.materials[0].diffuse.contents = down_color;
-                 [SCNTransaction commit];
-                 
-             }];
-            [SCNTransaction commit];
+            // set properties of sphere for rendering
+            SPHNode *sphere_node = self.spheres[i];
+            [sphere_node set_color:down_color with_peak_color:up_color with_amplitude:y_amplitude withDuration:ball_speed];
         }
     }
+    
+    NSDate *methodFinish = [NSDate date];
+    NSTimeInterval executionTime = [methodFinish timeIntervalSinceDate:methodStart];
+    NSLog(@"executionTime = %f", executionTime);
+    printf("sampling rand!");
+}
 
+//------------------------------------------------------------------------------
+
+/*
+ Sample data points from wavelength -> load into memory
+ */
+- (void)animate
+{
+    int NUM_SPHERES = 25;
+    for(int i = 0; i < NUM_SPHERES; ++i)
+    {
+        SPHNode *sphere = self.spheres[i];
+        
+        [SCNTransaction begin];
+        [SCNTransaction setAnimationDuration:sphere.duration];
+        sphere.position = SCNVector3Make(sphere.position.x, sphere.amplitude, sphere.position.z);
+        sphere.geometry.materials[0].diffuse.contents = sphere.up_color;
+        [SCNTransaction setCompletionBlock:^
+        {
+            [SCNTransaction begin];
+            [SCNTransaction setAnimationDuration:sphere.duration];
+            sphere.position = SCNVector3Make(sphere.position.x, 0.5, sphere.position.z);
+            sphere.geometry.materials[0].diffuse.contents = sphere.down_color;
+            [SCNTransaction commit];
+                 
+        }];
+        [SCNTransaction commit];
+    }
 }
 
 @end
