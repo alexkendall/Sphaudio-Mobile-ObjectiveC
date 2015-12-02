@@ -34,6 +34,7 @@
 @property bool queue_is_up;
 @property int song_indx;
 @property NSTimer *animate_timer;
+@property UITabBar *tab_bar;
 
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"motion" ofType:@"mp3"]
 
@@ -54,7 +55,7 @@
 /**
  The CoreGraphics based audio plot
  */
-@property EZAudioPlot *audioPlot;
+@property EZAudioPlotGL *audioPlot;
 
 //------------------------------------------------------------------------------
 

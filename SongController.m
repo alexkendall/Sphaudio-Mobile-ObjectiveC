@@ -19,7 +19,6 @@
 -(void)viewDidLoad{
     [super viewDidLoad];
     
-    
     CGFloat nav_offset = self.view.frame.size.width * 0.175;
     CGFloat height = self.view.frame.size.height - nav_offset;
     self.view.frame = CGRectMake(0.0, nav_offset, self.view.frame.size.width, height);
@@ -38,6 +37,7 @@
     self.search_bar = [[UISearchBar alloc]init];
     CGFloat search_width = self.view.bounds.size.width;
     CGFloat search_height = 50.0;
+    
     self.search_bar = [[UISearchBar alloc]initWithFrame:CGRectMake(0.0, 0.0, search_width, search_height)];
     self.search_bar.delegate = self;
     [self.view addSubview:self.search_bar];
@@ -48,7 +48,7 @@
     
     // configure table view
     UIColor *dark_gray = [[UIColor alloc]initWithRed:0.2 green:0.2 blue:0.2 alpha:1.0];
-    CGFloat table_height = self.view.frame.size.height - search_height;
+    CGFloat table_height = self.view.frame.size.height;
     self.table_view = [[UITableView alloc]initWithFrame:CGRectMake(0.0, search_height, self.view.frame.size.width, table_height) style:UITableViewStylePlain];
     self.table_view.delegate = self;
     self.table_view.dataSource = self;
@@ -56,8 +56,14 @@
     self.table_view.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.table_view.backgroundColor = dark_gray;
     
-
 }
+
+-(BOOL)prefersStatusBarHidden
+{
+    return YES;
+}
+
+
 
 #pragma mark - UITableViewDelegate
 
@@ -196,15 +202,3 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 }
 
 @end
-
-
-
-
-
-
-
-
-
-
-
-

@@ -182,7 +182,7 @@
     CGFloat plot_y = self.view.bounds.size.height - plot_height;
     
     //
-    self.audioPlot = [[EZAudioPlot alloc] initWithFrame:CGRectMake(0.0, plot_y, plot_width, plot_height)];
+    self.audioPlot = [[EZAudioPlotGL alloc] initWithFrame:CGRectMake(0.0, plot_y, plot_width, plot_height)];
     self.audioPlot.frame = CGRectMake(0.0, plot_y, plot_width, plot_height);
     
     // configure plot visuals
@@ -260,6 +260,7 @@
     [self.view addSubview:self.prev_button];
     
     // configure navigation button
+    /*
     self.nav_bar = [[NavBar alloc]init];
     CGFloat nav_dim = self.view.frame.size.width * 0.07;
     CGFloat margin = self.view.frame.size.width * 0.05;
@@ -267,6 +268,7 @@
     [self.nav_bar addTarget:self.nav_bar action:@selector(toggle) forControlEvents:UIControlEventTouchUpInside];
     [self.nav_bar addTarget:self action:@selector(toggle_queue) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.nav_bar];
+     */
     
     // set queue is up to false
     self.song_controller = [[SongController alloc]init];
@@ -307,6 +309,13 @@
     
 
     //**************************************************************************************
+    
+    // configure tab bar
+    /*
+    CGFloat tab_height = self.view.bounds.size.height * 0.1;
+    self.viewControllers = @[self.song_controller];
+    [self.view addSubview:self.tabBar];
+    */
     
 }
 
@@ -497,7 +506,7 @@
 {
     printf("ROLLING");
     self.audioPlot.plotType = EZPlotTypeRolling;
-    self.audioPlot.shouldFill = NO;
+    self.audioPlot.shouldFill = YES;
     self.audioPlot.shouldMirror = YES;
 }
 
@@ -520,11 +529,11 @@
         self.playing = true;
         [self.player play];
         
-        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:1.25 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
+        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
         [self performSelectorInBackground:@selector(update_timer) withObject:nil];
         
         
-        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:2.5 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
+        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
     }
 }
 
@@ -532,7 +541,7 @@
 
 -(void)begin_animation
 {
-    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:1.5 target:self selector:@selector(animate) userInfo:nil repeats:true];
+    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
 }
 
 -(void) begin_retrieval
@@ -540,6 +549,7 @@
     [self performSelectorInBackground:@selector(get_data) withObject:nil];
 }
 
+/*
 -(void)toggle_queue
 {
     printf("Bringing up queue");
@@ -559,6 +569,7 @@
         [self.view addSubview:self.song_controller.view];
     }
 }
+ */
 
 //------------------------------------------------------------------------------
 
@@ -613,7 +624,7 @@
         }
         
         // get max area... ball responsible for this frequency will be in the air the longest
-        float sample_speed = 1.5;
+        float sample_speed = 1.0;
         float speed_mult = sample_speed / max_area;
         
         // color array for interpolation
@@ -702,7 +713,6 @@
     NSDate *methodFinish = [NSDate date];
     NSTimeInterval executionTime = [methodFinish timeIntervalSinceDate:methodStart];
     NSLog(@"executionTime = %f", executionTime);
-    printf("sampling rand!");
 }
 
 //------------------------------------------------------------------------------
@@ -735,3 +745,8 @@
 }
 
 @end
+
+
+
+
+
