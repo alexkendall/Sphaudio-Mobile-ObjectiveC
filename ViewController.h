@@ -35,6 +35,7 @@
 @property int song_indx;
 @property NSTimer *animate_timer;
 @property UITabBar *tab_bar;
+@property NSArray *ball_colors;
 
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"motion" ofType:@"mp3"]
 

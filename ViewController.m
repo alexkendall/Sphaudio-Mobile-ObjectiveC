@@ -259,21 +259,23 @@
     self.prev_button.frame = CGRectMake(prev_offset_x, prev_offset_y, prev_dim, prev_dim);
     [self.view addSubview:self.prev_button];
     
-    // configure navigation button
-    /*
-    self.nav_bar = [[NavBar alloc]init];
-    CGFloat nav_dim = self.view.frame.size.width * 0.07;
-    CGFloat margin = self.view.frame.size.width * 0.05;
-    self.nav_bar.frame = CGRectMake(margin, margin, nav_dim * 1.25, nav_dim);
-    [self.nav_bar addTarget:self.nav_bar action:@selector(toggle) forControlEvents:UIControlEventTouchUpInside];
-    [self.nav_bar addTarget:self action:@selector(toggle_queue) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:self.nav_bar];
-     */
     
     // set queue is up to false
     self.song_controller = [[SongController alloc]init];
     self.queue_is_up = false;
     self.song_indx = 0;
+    
+    // setup ball color array
+    UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:233.0 / 255.0 blue:1.0 alpha:1.0];
+    UIColor *teal = [[UIColor alloc]initWithRed:0.0 green:159.0 / 255.0 blue:165.0 / 255.0 alpha:1.0];
+    UIColor *soft_green = [[UIColor alloc]initWithRed:0.0 green:179.0 / 255.0 blue:97.0 / 255.0 alpha:1.0];
+    UIColor *yellow_orange = [[UIColor alloc]initWithRed:1.0 green:198.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
+    UIColor *red_orange = [[UIColor alloc]initWithRed:1.0 green:107.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
+    UIColor *bright_red = [[UIColor alloc]initWithRed:1.0 green:23.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
+    UIColor *dark_red = [[UIColor alloc]initWithRed:0.5 green:0.0 blue:0.0 alpha:1.0];
+    
+    
+    self.ball_colors = @[light_blue, teal, soft_green, yellow_orange, red_orange, bright_red, dark_red];
     
     
     //**************************************************************************************
@@ -529,11 +531,11 @@
         self.playing = true;
         [self.player play];
         
-        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
+        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:1.5 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
         [self performSelectorInBackground:@selector(update_timer) withObject:nil];
         
         
-        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
+        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:3.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
     }
 }
 
@@ -541,7 +543,7 @@
 
 -(void)begin_animation
 {
-    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
+    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:1.5 target:self selector:@selector(animate) userInfo:nil repeats:true];
 }
 
 -(void) begin_retrieval
@@ -624,11 +626,8 @@
         }
         
         // get max area... ball responsible for this frequency will be in the air the longest
-        float sample_speed = 1.0;
+        float sample_speed = 1.5;
         float speed_mult = sample_speed / max_area;
-        
-        // color array for interpolation
-        NSArray *freq_colors = @[[UIColor blueColor], [UIColor greenColor], [UIColor yellowColor], [UIColor redColor]];
         
         // pass 2 use max area accordingly
         for(int i = 0; i < NUM_SPHERES; ++i)
@@ -666,42 +665,35 @@
             UIColor *down_color = [[UIColor alloc]init];
             
             
-            UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:233.0 / 255.0 blue:1.0 alpha:1.0];
-            UIColor *teal = [[UIColor alloc]initWithRed:0.0 green:159.0 / 255.0 blue:165.0 / 255.0 alpha:1.0];
-            UIColor *soft_green = [[UIColor alloc]initWithRed:0.0 green:179.0 / 255.0 blue:97.0 / 255.0 alpha:1.0];
-            UIColor *yellow_orange = [[UIColor alloc]initWithRed:1.0 green:198.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
-            UIColor *red_orange = [[UIColor alloc]initWithRed:1.0 green:107.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
-            UIColor *bright_red = [[UIColor alloc]initWithRed:1.0 green:23.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
-            UIColor *dark_red = [[UIColor alloc]initWithRed:0.5 green:0.0 blue:0.0 alpha:1.0];
             if(t_value < 0.17)
             {
-                down_color = light_blue;
-                up_color = teal;
+                down_color = self.ball_colors[0];
+                up_color = self.ball_colors[1];
             }
             else if(t_value < 0.34)
             {
-                down_color = teal;
-                up_color = soft_green;
+                down_color = self.ball_colors[1];
+                up_color = self.ball_colors[2];
             }
             else if(t_value < 0.5)
             {
-                down_color = soft_green;
-                up_color = yellow_orange;
+                down_color = self.ball_colors[2];
+                up_color = self.ball_colors[3];
             }
             else if(t_value < 0.68)
             {
-                down_color = yellow_orange;
-                up_color = red_orange;
+                down_color = self.ball_colors[3];
+                up_color = self.ball_colors[4];
             }
             else if(t_value < 0.85)
             {
-                down_color = red_orange;
-                up_color = bright_red;
+                down_color = self.ball_colors[4];
+                up_color = self.ball_colors[5];
             }
             else
             {
-                down_color = bright_red;
-                up_color = dark_red;
+                down_color = self.ball_colors[5];
+                up_color = self.ball_colors[6];
             }
             
             // set properties of sphere for rendering
@@ -745,8 +737,3 @@
 }
 
 @end
-
-
-
-
-

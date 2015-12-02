@@ -29,17 +29,17 @@
     UIImage *tab_image2 = [UIImage imageNamed:@"pulse.png"];
     UIImage *tab_image3 = [UIImage imageNamed:@"set.png"];
     
-    SongController* songs_controller = [[SongController alloc]init];
-    songs_controller.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Music" image:tab_image1 tag:0];
+    self.songs_controller = [[SongController alloc]init];
+    self.songs_controller.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Music" image:tab_image1 tag:0];
     
-    ViewController* vis_controller = [[ViewController alloc]init];
-    vis_controller.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Visualizer" image:tab_image2 tag:1];
+    self.vis_controller = [[ViewController alloc]init];
+    self.vis_controller.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Visualizer" image:tab_image2 tag:1];
     
-    SettingsController* settings_controller = [[SettingsController alloc]init];
-    settings_controller.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Settings" image:tab_image3 tag:2];
+    self.settings_controller = [[SettingsController alloc]init];
+    self.settings_controller.tabBarItem = [[UITabBarItem alloc]initWithTitle:@"Settings" image:tab_image3 tag:2];
     
-    tab_controller.viewControllers = @[songs_controller, vis_controller, settings_controller];
-    tab_controller.selectedViewController = vis_controller;
+    tab_controller.viewControllers = @[self.songs_controller, self.vis_controller, self.settings_controller];
+    tab_controller.selectedViewController = self.vis_controller;
     self.window.rootViewController = tab_controller;
     
     tab_controller.tabBar.tintColor =  [UIColor whiteColor];
