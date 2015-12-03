@@ -19,33 +19,12 @@
 @import UIKit;
 @import SceneKit;
 
-static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
 
 @implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    
-    
-    //**************************************************************************************
-    //
-    // Setup the AVAudioSession. EZMicrophone will not work properly on iOS
-    // if you don't do this!
-    //
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    NSError *error;
-    [session setCategory:AVAudioSessionCategoryPlayback error:&error];
-    if (error)
-    {
-        NSLog(@"Error setting up audio session category: %@", error.localizedDescription);
-    }
-    [session setActive:YES error:&error];
-    if (error)
-    {
-        NSLog(@"Error setting up audio session active: %@", error.localizedDescription);
-    }
-    //**************************************************************************************
     
     // configure superview
     self.super_view = self.view;
@@ -164,19 +143,6 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     CGFloat offset_x = (self.super_view.bounds.size.width - width) * 0.5;
     CGFloat offset_y = self.super_view.bounds.size.height * 0.05;
     
-    // configure play button
-    /*
-    self.play_button = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.play_button.frame = CGRectMake(offset_x, offset_y, width, height);
-    self.play_button.backgroundColor = [UIColor whiteColor];
-    self.play_button.layer.cornerRadius = height * 0.15;
-    
-    // configure title properties
-    [self.play_button setTitle:@"Play" forState:UIControlStateNormal];
-    [self.play_button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [self.play_button setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
-    [self.super_view addSubview:self.play_button];
-    */
     
     // add targets for playing song
     [self.play_button addTarget:self action:@selector(play_song) forControlEvents:UIControlEventTouchUpInside];
@@ -287,44 +253,12 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     self.shinny_mode = false;
     
     
-    //**************************************************************************************
     
+    // configure output
     NSLog(@"outputs: %@", [EZAudioDevice outputDevices]);
-    
-    //
-    // Create the audio player
-    //
     self.player = [EZAudioPlayer audioPlayerWithDelegate:self];
     self.player.shouldLoop = YES;
-    // Override the output to the speaker
-    [session overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&error];
-    if (error)
-    {
-        NSLog(@"Error overriding output to the speaker: %@", error.localizedDescription);
-    }
-    
-    //
-    // Customize UI components
-    //
-    //self.rollingHistorySlider.value = (float)[self.audioPlot rollingHistoryLength];
-    
-    //
-    // Listen for EZAudioPlayer notifications
-    //
-    [self setupNotifications];
-    
-    /*
-     Try opening the sample file
-     */
-    [self openFileWithFilePathURL:[NSURL fileURLWithPath:kAudioFileDefault]];
-    
 
-    //**************************************************************************************
-    
-    self.fft = [EZAudioFFTRolling fftWithWindowSize:FFTViewControllerFFTWindowSize
-                                         sampleRate:41000.0
-                                           delegate:self];
-    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -604,20 +538,22 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
 {
     NSDate *methodStart = [NSDate date];
     
-    float max_fft = 0.0;
+    //float max_fft = 0.0;
     
     int NUM_POINTS = 1024;
     EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:NUM_POINTS];
     float* data = [wave_data bufferForChannel:0];
     
-    [self.fft computeFFTWithBuffer:data withBufferSize:NUM_POINTS];
+    //[self.fft computeFFTWithBuffer:data withBufferSize:NUM_POINTS];
     for(int i = 0; i < NUM_POINTS; ++i)
     {
         //printf("FFT VALUE: %f RAW VALUE: %f\n", self.fft.fftData[i], data[i]);
+        /*
         if(self.fft.fftData[i] > max_fft)
         {
             max_fft = self.fft.fftData[i];
         }
+         */
     }
     
     int NUM_SPHERES = 25;
@@ -654,7 +590,7 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
         }
         
         printf("Max Area: %f",max_area);
-        printf("Max fft: %f",max_fft);
+        //printf("Max fft: %f",max_fft);
         
         
         // get max area... ball responsible for this frequency will be in the air the longest
@@ -799,19 +735,5 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     }
 }
 
-//------------------------------------------------------------------------------
-#pragma mark - EZAudioFFTDelegate
-//------------------------------------------------------------------------------
-
-- (void) fft:(EZAudioFFT *)fft
- updatedWithFFTData:(float *)fftData
-         bufferSize:(vDSP_Length)bufferSize
-{
-    float maxFrequency = [fft maxFrequency];
-    NSString *noteName = [EZAudioUtilities noteNameStringForFrequency:maxFrequency
-                                                        includeOctave:YES];
-}
-
-//------------------------------------------------------------------------------
 
 @end
