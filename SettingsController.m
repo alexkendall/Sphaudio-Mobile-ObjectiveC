@@ -8,6 +8,8 @@
 
 #import "SettingsController.h"
 #import <UIKit/UIKit.h>
+#include "CheckButton.h"
+#include "AppDelegate.h"
 
 @implementation SettingsController
 
@@ -17,25 +19,34 @@
     UIColor *dark_gray = [[UIColor alloc]initWithRed:0.2 green:0.2 blue:0.2 alpha:1.0];
     self.view.backgroundColor = dark_gray;
     
+    self.CURRENT_THEME = 0;
     
     // configure colors
     
     // default
-    UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:213.0 / 255.0 blue:1.0 alpha:1.0];
-    UIColor *soft_blue = [[UIColor alloc]initWithRed:0.0 green:114.0 / 255.0 blue:228.0 / 255.0 alpha:1.0];
-    UIColor *soft_green= [[UIColor alloc]initWithRed:0.0 green:198.0 / 255.0 blue:137.0 / 255.0 alpha:1.0];
-    UIColor *gold = [[UIColor alloc]initWithRed:1.0 green:187.0 / 255.0 blue:0.0 alpha:1.0];
-    UIColor *orange = [UIColor orangeColor];
-    UIColor *red = [UIColor redColor];
+    UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:233.0 / 255.0 blue:1.0 alpha:1.0];
+    UIColor *teal = [[UIColor alloc]initWithRed:0.0 green:159.0 / 255.0 blue:165.0 / 255.0 alpha:1.0];
+    UIColor *soft_green = [[UIColor alloc]initWithRed:0.0 green:179.0 / 255.0 blue:97.0 / 255.0 alpha:1.0];
+    UIColor *yellow_orange = [[UIColor alloc]initWithRed:1.0 green:198.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
+    UIColor *red_orange = [[UIColor alloc]initWithRed:1.0 green:107.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
+    UIColor *bright_red = [[UIColor alloc]initWithRed:1.0 green:23.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
+    UIColor *dark_red = [[UIColor alloc]initWithRed:0.5 green:0.0 blue:0.0 alpha:1.0];
+
     
+    self.default_colors = @[light_blue, teal, soft_green, yellow_orange, red_orange, bright_red, dark_red];
+    
+    UIColor *white = [UIColor whiteColor];
+
     // warm
+    UIColor *yellow = [UIColor yellowColor];
     UIColor *soft_yellow = [[UIColor alloc]initWithRed:1.0 green:212.0 / 255.0 blue:0.0 alpha:1.0];
     UIColor *burnt_yellow = [[UIColor alloc]initWithRed:1.0 green:150.0 / 255.0 blue:0.0 alpha:1.0];
     UIColor *soft_orange= [[UIColor alloc]initWithRed:1.0 green:68.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
     UIColor *soft_red = [[UIColor alloc]initWithRed:1.0 green:26.0 / 255.0 blue:0.0 alpha:1.0];
     UIColor *burnt_red = [[UIColor alloc]initWithRed:178.0 / 255.0 green:0.0 blue:0.0 alpha:1.0];
     UIColor *dark_maroon = [[UIColor alloc]initWithRed:109.0 / 255.0 green:0.0 blue:0.0 alpha:1.0];
-    self.warm_colors = @[soft_yellow, burnt_yellow, soft_orange, soft_red, burnt_red, dark_maroon];
+    
+    self.warm_colors = @[yellow, soft_yellow, burnt_yellow, soft_orange, soft_red, burnt_red, dark_red];
     
     // cool
     UIColor *icy_blue_ = [[UIColor alloc]initWithRed:0.0 green:255.0 / 255.0 blue:1.0 alpha:1.0];
@@ -44,9 +55,10 @@
     UIColor *soft_green_ = [[UIColor alloc]initWithRed:0.0 green:167.0 / 255.0 blue:123.0 alpha:1.0];
     UIColor *light_green_ = [[UIColor alloc]initWithRed:0.0 / 255.0 green:167.0 / 255.0 blue:66.0 / 255.0 alpha:1.0];
     UIColor *forest_green_ = [[UIColor alloc]initWithRed:0.0 / 255.0 green:167.0 / 255.0 blue:66.0 / 255.0 alpha:1.0];
-    self.cool_colors = @[icy_blue_, light_blue_, soft_blue_, soft_green_, light_green_, forest_green_, dark_maroon];
+    UIColor *dark_green_ = [[UIColor alloc]initWithRed:0.0 / 255.0 green:64.0 / 255.0 blue:25.0 / 255.0 alpha:1.0];
+    self.cool_colors = @[icy_blue_, light_blue_, soft_blue_, soft_green_, light_green_, forest_green_, dark_green_];
     
-    self.default_colors = @[light_blue, soft_blue, soft_green, gold, orange, red];
+
     
     // settings theme
     CGFloat settings_margin = self.view.bounds.size.width * 0.05;
@@ -69,6 +81,7 @@
     CGFloat dim = span / 9.0;
     CGFloat margin = dim * 0.5;
     CGFloat offset_y = self.default_label.frame.origin.y + self.default_label.frame.size.height;
+    self.default_views = [[NSMutableArray alloc]init];
     
     for(int i = 0; i < NUM_COLORS; ++i)
     {
@@ -78,7 +91,17 @@
         color_view.layer.borderColor = [[UIColor whiteColor] CGColor];
         color_view.backgroundColor = self.default_colors[i];
         [self.view addSubview:color_view];
+        [self.default_views addObject:color_view];
+        
     }
+    
+    // default selection view
+    self.def_selection_but = [[CheckButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width - dim - margin, offset_y + margin, dim, dim)];
+    [self.def_selection_but setTag:0];
+    [self.def_selection_but set_checked];
+    [self.view addSubview:self.def_selection_but];
+    [self.def_selection_but addTarget:self action:@selector(update_theme_with_sender:) forControlEvents:UIControlEventTouchUpInside];
+    
     
     // warm theme
     CGFloat warm_y = self.default_label.frame.origin.y +  self.default_label.frame.size.height + seperator_height;
@@ -98,6 +121,13 @@
         [self.view addSubview:color_view];
     }
     
+    // warm selection view
+    self.warm_selection_but = [[CheckButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width - dim - margin, warm_y + 20.0 + margin, dim, dim)];
+    self.warm_selection_but.backgroundColor = [UIColor whiteColor];
+    [self.warm_selection_but setTag:1];
+    [self.view addSubview:self.warm_selection_but];
+    [self.warm_selection_but addTarget:self action:@selector(update_theme_with_sender:) forControlEvents:UIControlEventTouchUpInside];
+    
     // cool theme
     CGFloat cool_y = self.warm_theme.frame.origin.y +  self.warm_theme.frame.size.height + seperator_height;
     
@@ -116,6 +146,75 @@
         [self.view addSubview:color_view];
     }
     
+    // cool selection view
+    self.cool_selection_but = [[CheckButton alloc]initWithFrame:CGRectMake(self.view.frame.size.width - dim - margin, cool_y + 20.0 + margin, dim, dim)];
+    [self.view addSubview:self.cool_selection_but];
+    [self.cool_selection_but setTag:2];
+    [self.cool_selection_but addTarget:self action:@selector(update_theme_with_sender:) forControlEvents:UIControlEventTouchUpInside];
+    
+    // shininess label and switch
+    CGFloat shininess_y = self.cool_theme.frame.origin.y +  self.cool_theme.frame.size.height + seperator_height;
+    self.shininess_label = [[UILabel alloc]initWithFrame:CGRectMake(settings_margin, shininess_y, self.view.bounds.size.width, 20.0)];
+    self.shininess_label.text = @"SHINNY MODE";
+    
+    //shinny_switch
+    self.shininess_label.textColor = [UIColor whiteColor];
+    self.shinny_switch = [[CheckButton alloc]initWithFrame:CGRectMake(settings_margin, shininess_y + 20.0 + margin, dim, dim)];
+    [self.shinny_switch addTarget:self action:@selector(toggle_shinny_mode_with_sender:) forControlEvents:UIControlEventTouchUpInside];
+    
+
+    [self.view addSubview:self.shininess_label];
+    [self.view addSubview:self.shinny_switch];
+}
+
+-(void)toggle_shinny_mode_with_sender:(CheckButton*)sender
+{
+    printf("toggling shinny mode");
+    if(sender.is_checked)
+    {
+        [sender set_not_checked];
+        AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+        ViewController *vis_controller = app_delegate.vis_controller;
+        [vis_controller set_matte];
+    }
+    else
+    {
+        [sender set_checked];
+        AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+        ViewController *vis_controller = app_delegate.vis_controller;
+        [vis_controller set_shinny];
+    }
+    
+}
+
+-(void) update_theme_with_sender:(UIButton*)sender
+{
+    printf("Theme selected for button number %ld\n", (long)sender.tag);
+    
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    ViewController *visualizer_controller = app_delegate.vis_controller;
+    
+    if(sender.tag == 0)
+    {
+        [self.def_selection_but set_checked];
+        [self.warm_selection_but set_not_checked];
+        [self.cool_selection_but set_not_checked];
+        visualizer_controller.ball_colors = self.default_colors;
+    }
+    if(sender.tag == 1)
+    {
+        [self.def_selection_but set_not_checked];
+        [self.warm_selection_but set_checked];
+        [self.cool_selection_but set_not_checked];
+        visualizer_controller.ball_colors = self.warm_colors;
+    }
+    if(sender.tag == 2)
+    {
+        [self.def_selection_but set_not_checked];
+        [self.warm_selection_but set_not_checked];
+        [self.cool_selection_but set_checked];
+        visualizer_controller.ball_colors = self.cool_colors;
+    }
 }
 
 @end

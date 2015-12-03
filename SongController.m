@@ -11,6 +11,8 @@
 #import "EZAudioPlayer.h"
 #import "EZAudio.h"
 #import "SongController.h"
+#import "AppDelegate.h"
+#import "ViewController.h"
 @import MediaPlayer;
 
 @implementation SongController
@@ -23,15 +25,6 @@
     CGFloat height = self.view.frame.size.height - nav_offset;
     self.view.frame = CGRectMake(0.0, nav_offset, self.view.frame.size.width, height);
     self.view.backgroundColor = [[UIColor alloc]initWithRed:0.12 green:0.12 blue:0.12 alpha:1.0];
-    
-    /*
-     // configure search bar
-     let search_width:CGFloat = super_view.bounds.width;
-     let search_height:CGFloat = 50.0;
-     search_bar = UISearchBar(frame: CGRect(x: 0.0, y: 0.0, width: search_width, height: search_height));
-     search_bar.delegate = self;
-     super_view.addSubview(search_bar)
-     */
     
     // configure search bar
     self.search_bar = [[UISearchBar alloc]init];
@@ -72,16 +65,29 @@
 - (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    printf("Selected row %d\n", indexPath.row);
+    printf("Selected row %ld\n", (long)indexPath.row);
     
     // get song
     MPMediaItem *selected_song = self.songs_array[indexPath.row];
     
-    // get its url
-    NSURL *song_url = [selected_song valueForKey:MPMediaItemPropertyAssetURL];
+    // get visualizer controller instance
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    ViewController *vis_controller = app_delegate.vis_controller;
+    EZAudioPlayer *player = vis_controller.player;
+    
+    [player openMediaItem:selected_song
+             completion:^(EZAudioFile *audioFile,
+                          NSError *error)
+    {
+        NSLog(@"audio file: %@, error: %@", audioFile, error);
+    }];
+    [player play];
+    
     
     // get rid of keyboard if up
     [self.search_bar resignFirstResponder];
+    
+    
     
 }
 

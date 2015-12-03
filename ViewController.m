@@ -19,6 +19,8 @@
 @import UIKit;
 @import SceneKit;
 
+static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
+
 @implementation ViewController
 
 - (void)viewDidLoad {
@@ -109,11 +111,15 @@
             NSArray *materials = @[sphere_material];
             sphere_geometry.materials = materials;
             
+            // shininess
+            
+            
             CGFloat x = origin_x + (c * step);
             CGFloat y = r * step;
             sphere_node.position = SCNVector3Make(x, 0.5, y);
             [scene.rootNode addChildNode:sphere_node];
             [self.spheres addObject:sphere_node];
+            
         }
     }
     
@@ -277,6 +283,9 @@
     
     self.ball_colors = @[light_blue, teal, soft_green, yellow_orange, red_orange, bright_red, dark_red];
     
+    // set to not shinny by default
+    self.shinny_mode = false;
+    
     
     //**************************************************************************************
     
@@ -312,12 +321,9 @@
 
     //**************************************************************************************
     
-    // configure tab bar
-    /*
-    CGFloat tab_height = self.view.bounds.size.height * 0.1;
-    self.viewControllers = @[self.song_controller];
-    [self.view addSubview:self.tabBar];
-    */
+    self.fft = [EZAudioFFTRolling fftWithWindowSize:FFTViewControllerFFTWindowSize
+                                         sampleRate:41000.0
+                                           delegate:self];
     
 }
 
@@ -447,6 +453,8 @@
     //
     [self.player setAudioFile:self.audioFile];
     
+    
+    
 }
 
 //------------------------------------------------------------------------------
@@ -470,6 +478,7 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [weakSelf.audioPlot updateBuffer:buffer[0]
                           withBufferSize:bufferSize];
+        
     });
 }
 
@@ -595,12 +604,26 @@
 {
     NSDate *methodStart = [NSDate date];
     
+    float max_fft = 0.0;
+    
     int NUM_POINTS = 1024;
     EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:NUM_POINTS];
     float* data = [wave_data bufferForChannel:0];
+    
+    [self.fft computeFFTWithBuffer:data withBufferSize:NUM_POINTS];
+    for(int i = 0; i < NUM_POINTS; ++i)
+    {
+        //printf("FFT VALUE: %f RAW VALUE: %f\n", self.fft.fftData[i], data[i]);
+        if(self.fft.fftData[i] > max_fft)
+        {
+            max_fft = self.fft.fftData[i];
+        }
+    }
+    
     int NUM_SPHERES = 25;
     int SAMPLE_RANGE = ceil(NUM_POINTS / 25.0);
     
+
     if(data != nil)
     {
         float max_area = 0.0;
@@ -616,14 +639,23 @@
             // sample points in range, take peak and area
             for(int i = start_index; i < end_index; ++i)
             {
+               
                 float this_point = fabs(data[i]);
                 area += this_point;
+                 /*
+                float this_point = fabsf(self.fft.fftData[i]);
+                area += this_point;
+                 */
             }
             if(area > max_area)
             {
                 max_area = area;
             }
         }
+        
+        printf("Max Area: %f",max_area);
+        printf("Max fft: %f",max_fft);
+        
         
         // get max area... ball responsible for this frequency will be in the air the longest
         float sample_speed = 1.5;
@@ -632,6 +664,7 @@
         // pass 2 use max area accordingly
         for(int i = 0; i < NUM_SPHERES; ++i)
         {
+            
             // set sample start and end indexes
             int start_index = i * SAMPLE_RANGE;
             int end_index = start_index + SAMPLE_RANGE;
@@ -641,8 +674,13 @@
             // sample points in range, take peak and area
             for(int i = start_index; i < end_index; ++i)
             {
+               
                 float this_point = fabs(data[i]);
                 area += this_point;
+                 /*
+                float this_point = fabs(self.fft.fftData[i]);
+                area += this_point;
+                  */
                 if(this_point > max)
                 {
                     max = this_point;
@@ -652,7 +690,7 @@
             //printf("Amplitude: %f\nArea: %f\n", max, area);
             
             // measure y amplitude
-            float y_amplitude = max * 40.0;
+            float y_amplitude = max * 50.0;
             
             // use half speed for ball up, half for ball down
             float ball_speed = area * speed_mult * 0.5;
@@ -664,22 +702,25 @@
             UIColor *up_color = [[UIColor alloc]init];
             UIColor *down_color = [[UIColor alloc]init];
             
-            
+            //if(t_value < 0.001)
             if(t_value < 0.17)
             {
                 down_color = self.ball_colors[0];
                 up_color = self.ball_colors[1];
             }
             else if(t_value < 0.34)
+            //else if(t_value < 0.01)
             {
                 down_color = self.ball_colors[1];
                 up_color = self.ball_colors[2];
             }
             else if(t_value < 0.5)
+            //else if(t_value < 0.1)
             {
                 down_color = self.ball_colors[2];
                 up_color = self.ball_colors[3];
             }
+            //else if(t_value < 0.15)
             else if(t_value < 0.68)
             {
                 down_color = self.ball_colors[3];
@@ -709,6 +750,28 @@
 
 //------------------------------------------------------------------------------
 
+-(void)set_shinny
+{
+    for(int i = 0; i < self.spheres.count; ++i)
+    {
+        SCNNode *sphere = self.spheres[i];
+        SCNMaterial *material = sphere.geometry.materials[0];
+        material.specular.contents = [UIColor whiteColor];
+        material.shininess = 0.5;
+    }
+}
+
+-(void)set_matte
+{
+    for(int i = 0; i < self.spheres.count; ++i)
+    {
+        SCNNode *sphere = self.spheres[i];
+        SCNMaterial *material = sphere.geometry.materials[0];
+        material.specular.contents = @[];
+        material.shininess = 0.0;
+    }
+}
+
 /*
  Sample data points from wavelength -> load into memory
  */
@@ -735,5 +798,20 @@
         [SCNTransaction commit];
     }
 }
+
+//------------------------------------------------------------------------------
+#pragma mark - EZAudioFFTDelegate
+//------------------------------------------------------------------------------
+
+- (void) fft:(EZAudioFFT *)fft
+ updatedWithFFTData:(float *)fftData
+         bufferSize:(vDSP_Length)bufferSize
+{
+    float maxFrequency = [fft maxFrequency];
+    NSString *noteName = [EZAudioUtilities noteNameStringForFrequency:maxFrequency
+                                                        includeOctave:YES];
+}
+
+//------------------------------------------------------------------------------
 
 @end
