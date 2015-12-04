@@ -135,38 +135,6 @@
     NSArray *constraints = @[constraint];
     camera_node.constraints = constraints;
     spot_node.constraints = constraints;
-
-    
-    // configure play button
-    CGFloat width = self.super_view.bounds.size.width * 0.5;
-    CGFloat height = self.super_view.bounds.size.height * 0.05;
-    CGFloat offset_x = (self.super_view.bounds.size.width - width) * 0.5;
-    CGFloat offset_y = self.super_view.bounds.size.height * 0.05;
-    
-    
-    // add targets for playing song
-    [self.play_button addTarget:self action:@selector(play_song) forControlEvents:UIControlEventTouchUpInside];
-    self.playing = false;
-    
-    // configure audio plot
-    CGFloat plot_height = self.view.bounds.size.height * 0.2;
-    CGFloat plot_width = self.view.bounds.size.width;
-    CGFloat plot_y = self.view.bounds.size.height - plot_height;
-    
-    //
-    self.audioPlot = [[EZAudioPlotGL alloc] initWithFrame:CGRectMake(0.0, plot_y, plot_width, plot_height)];
-    self.audioPlot.frame = CGRectMake(0.0, plot_y, plot_width, plot_height);
-    
-    // configure plot visuals
-    self.audioPlot.backgroundColor = [UIColor clearColor];
-    self.audioPlot.color           = [UIColor whiteColor];
-    self.audioPlot.plotType        = EZPlotTypeRolling;
-    self.audioPlot.shouldFill      = NO;
-    self.audioPlot.shouldMirror    = YES;
-    
-    // add plot to subview
-    //[self.super_view addSubview:self.audioPlot];
-    
     
     // configure song title label
     CGFloat label_height = 40.0;
@@ -190,14 +158,6 @@
     [self.super_view addSubview:self.title_label];
     [self.super_view addSubview:self.artist_label];
     
-    // generate thread for handling sphere animations and rendering
-    NSThread *ball_thread = [[NSThread alloc]initWithTarget:self selector:@selector(animate) object:nil];
-    [self animate];
-    
-    
-    // configure timer for updating spheres
-    //self.amp_points = [[NSMutableArray alloc]init];
-    //self.update_timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(animate) userInfo:nil repeats:true];
     
     // configure play button
     self.play_button = [[PlayButton alloc]init];
@@ -252,13 +212,12 @@
     // set to not shinny by default
     self.shinny_mode = false;
     
+    // confihgure audio player
+    self.media_player = [[MPMusicPlayerController alloc]init];
     
+    // set seek time to 0
+    self.seek_time = 0.0;
     
-    // configure output
-    NSLog(@"outputs: %@", [EZAudioDevice outputDevices]);
-    self.player = [EZAudioPlayer audioPlayerWithDelegate:self];
-    self.player.shouldLoop = YES;
-
 }
 
 - (void)didReceiveMemoryWarning {
@@ -268,217 +227,58 @@
 
 -(void)play_song
 {
-    
     if(self.playing)
     {
+        [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
+                 NSError *error)
+        {
+            NSLog(@"audio file: %@, error: %@", audioFile, error);
+        }];
+
         
         printf("pausing song\n");
         [self.play_button setTitle:@"Play" forState:UIControlStateNormal];
         self.playing = false;
-        [self.player pause];
+        [self.media_player pause];
     }
     else
     {
         printf("playing song\n");
         [self.play_button setTitle:@"Pause" forState:UIControlStateNormal];
         self.playing = true;
-        [self.player play];
+        [self.media_player play];
         
     }
-}
-
-//------------------------------------------------------------------------------
-#pragma mark - Notifications
-//------------------------------------------------------------------------------
-
-- (void)setupNotifications
-{
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(audioPlayerDidChangeAudioFile:)
-                                                 name:EZAudioPlayerDidChangeAudioFileNotification
-                                               object:self.player];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(audioPlayerDidChangeOutputDevice:)
-                                                 name:EZAudioPlayerDidChangeOutputDeviceNotification
-                                               object:self.player];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(audioPlayerDidChangePlayState:)
-                                                 name:EZAudioPlayerDidChangePlayStateNotification
-                                               object:self.player];
-}
-
-//------------------------------------------------------------------------------
-
-- (void)audioPlayerDidChangeAudioFile:(NSNotification *)notification
-{
-    EZAudioPlayer *player = [notification object];
-    NSLog(@"Player changed audio file: %@", [player audioFile]);
-}
-
-//------------------------------------------------------------------------------
-
-- (void)audioPlayerDidChangeOutputDevice:(NSNotification *)notification
-{
-    EZAudioPlayer *player = [notification object];
-    NSLog(@"Player changed output device: %@", [player device]);
-}
-
-//------------------------------------------------------------------------------
-
-- (void)audioPlayerDidChangePlayState:(NSNotification *)notification
-{
-    EZAudioPlayer *player = [notification object];
-    NSLog(@"Player change play state, isPlaying: %i", [player isPlaying]);
-}
-
-//------------------------------------------------------------------------------
-#pragma mark - Actions
-//------------------------------------------------------------------------------
-
-- (void)changePlotType:(id)sender
-{
-    NSInteger selectedSegment = [sender selectedSegmentIndex];
-    switch(selectedSegment)
-    {
-        case 0:
-            [self drawBufferPlot];
-            break;
-        case 1:
-            [self drawRollingPlot];
-            break;
-        default:
-            break;
-    }
-}
-
-
-- (void)openFileWithFilePathURL:(NSURL *)filePathURL
-{
-    //
-    // Create the EZAudioPlayer
-    //
-    self.audioFile = [EZAudioFile audioFileWithURL:filePathURL];
-    
-    //
-    // Update the UI
-    //
-    
-    
-    //self.filePathLabel.text = filePathURL.lastPathComponent;
-    //self.positionSlider.maximumValue = (float)self.audioFile.totalFrames;
-    //self.volumeSlider.value = [self.player volume];
-    
-    //
-    // Plot the whole waveform
-    //
-    self.audioPlot.plotType = EZPlotTypeBuffer;
-    self.audioPlot.shouldFill = YES;
-    self.audioPlot.shouldMirror = YES;
-    __weak typeof (self) weakSelf = self;
-    [self.audioFile getWaveformDataWithCompletionBlock:^(float **waveformData,
-                                                         int length)
-     {
-         [weakSelf.audioPlot updateBuffer:waveformData[0]
-                           withBufferSize:length];
-     }];
-    
-    //
-    // Play the audio file
-    //
-    [self.player setAudioFile:self.audioFile];
-    
-    
-    
-}
-
-//------------------------------------------------------------------------------
-
-- (void)seekToFrame:(id)sender
-{
-    [self.player seekToFrame:(SInt64)[(UISlider *)sender value]];
-}
-
-//------------------------------------------------------------------------------
-#pragma mark - EZAudioPlayerDelegate
-//------------------------------------------------------------------------------
-
-- (void)  audioPlayer:(EZAudioPlayer *)audioPlayer
-          playedAudio:(float **)buffer
-       withBufferSize:(UInt32)bufferSize
- withNumberOfChannels:(UInt32)numberOfChannels
-          inAudioFile:(EZAudioFile *)audioFile
-{
-    __weak typeof (self) weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [weakSelf.audioPlot updateBuffer:buffer[0]
-                          withBufferSize:bufferSize];
-        
-    });
-}
-
-//------------------------------------------------------------------------------
-
-- (void)audioPlayer:(EZAudioPlayer *)audioPlayer
-    updatedPosition:(SInt64)framePosition
-        inAudioFile:(EZAudioFile *)audioFile
-{
-    __weak typeof (self) weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-    });
-}
-
-//------------------------------------------------------------------------------
-#pragma mark - Utility
-//------------------------------------------------------------------------------
-
-/*
- Give the visualization of the current buffer (this is almost exactly the openFrameworks audio input eample)
- */
-- (void)drawBufferPlot
-{
-    printf("BUFFER");
-    self.audioPlot.plotType = EZPlotTypeBuffer;
-    self.audioPlot.shouldMirror = NO;
-    self.audioPlot.shouldFill = NO;
-}
-
-//------------------------------------------------------------------------------
-
-/*
- Give the classic mirrored, rolling waveform look
- */
-- (void)drawRollingPlot
-{
-    printf("ROLLING");
-    self.audioPlot.plotType = EZPlotTypeRolling;
-    self.audioPlot.shouldFill = YES;
-    self.audioPlot.shouldMirror = YES;
 }
 
 //------------------------------------------------------------------------------
 
 -(void)toggle_play
 {
+    [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
+                                                                                NSError *error)
+     {
+         NSLog(@"audio file: %@, error: %@", audioFile, error);
+     }];
     printf("\nPlay toggle\n");
     
     if(self.playing)
     {
         self.playing = false;
-        [self.player pause];
+        [self.media_player pause];
         [self.update_timer invalidate];
         [self.animate_timer invalidate];
     }
     else
     {
-        //self.player.audioFile = [[EZAudioFile alloc]initWithURL:song_url delegate:self];
         self.playing = true;
-        [self.player play];
+        [self.media_player play];
         
-        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:1.5 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
+        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
         [self performSelectorInBackground:@selector(update_timer) withObject:nil];
         
         
-        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:3.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
+        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
     }
 }
 
@@ -486,50 +286,12 @@
 
 -(void)begin_animation
 {
-    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:1.5 target:self selector:@selector(animate) userInfo:nil repeats:true];
+    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
 }
 
 -(void) begin_retrieval
 {
     [self performSelectorInBackground:@selector(get_data) withObject:nil];
-}
-
-/*
--(void)toggle_queue
-{
-    printf("Bringing up queue");
-    
-    if(self.queue_is_up)
-    {
-        // take down song controller
-        self.queue_is_up = false;
-        [self.song_controller.view removeFromSuperview];
-        self.song_controller.table_view.reloadData;
-        [self.song_controller reset_state];
-    }
-    else
-    {
-        // put up song controller
-        self.queue_is_up = true;
-        [self.view addSubview:self.song_controller.view];
-    }
-}
- */
-
-//------------------------------------------------------------------------------
-
--(void)test_play
-{
-    [self.song_controller.table_view reloadData];
-    if(self.song_controller.songs_array.count > 0)
-    {
-        MPMediaItem *song = self.song_controller.songs_array[0];
-        [self.player openMediaItem:song completion:^(EZAudioFile *audioFile,
-                                                     NSError *error)
-         {
-             NSLog(@"audio file: %@, error: %@", audioFile, error);
-         }];
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -538,23 +300,20 @@
 {
     NSDate *methodStart = [NSDate date];
     
-    //float max_fft = 0.0;
+    // get sample rate
+    float SAMPLE_RATE = self.audio_file.totalClientFrames / self.audio_file.duration;
+    printf("SAMPLE RATE : %f\n", SAMPLE_RATE);
+    
+    // get current time in song
+    self.seek_time += 1.0;
+    
+    // seek to frame
+    [self.audio_file seekToFrame:SAMPLE_RATE * self.seek_time];
     
     int NUM_POINTS = 1024;
-    EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:NUM_POINTS];
+    EZAudioFloatData *wave_data = [self.audio_file getWaveformDataWithNumberOfPoints:NUM_POINTS];
     float* data = [wave_data bufferForChannel:0];
     
-    //[self.fft computeFFTWithBuffer:data withBufferSize:NUM_POINTS];
-    for(int i = 0; i < NUM_POINTS; ++i)
-    {
-        //printf("FFT VALUE: %f RAW VALUE: %f\n", self.fft.fftData[i], data[i]);
-        /*
-        if(self.fft.fftData[i] > max_fft)
-        {
-            max_fft = self.fft.fftData[i];
-        }
-         */
-    }
     
     int NUM_SPHERES = 25;
     int SAMPLE_RANGE = ceil(NUM_POINTS / 25.0);
@@ -563,7 +322,7 @@
     if(data != nil)
     {
         float max_area = 0.0;
-        
+        float global_max_amplitude = 0.0;
         // pass 1 get max area, use this for speed
         for(int i = 0; i < NUM_SPHERES; ++i)
         {
@@ -578,10 +337,10 @@
                
                 float this_point = fabs(data[i]);
                 area += this_point;
-                 /*
-                float this_point = fabsf(self.fft.fftData[i]);
-                area += this_point;
-                 */
+                if(this_point > global_max_amplitude)
+                {
+                    global_max_amplitude = this_point;
+                }
             }
             if(area > max_area)
             {
@@ -590,12 +349,13 @@
         }
         
         printf("Max Area: %f",max_area);
-        //printf("Max fft: %f",max_fft);
-        
         
         // get max area... ball responsible for this frequency will be in the air the longest
-        float sample_speed = 1.5;
+        float sample_speed = 2.0;
         float speed_mult = sample_speed / max_area;
+        
+        float max_y = 12.0;
+        float amp_mult = max_y / global_max_amplitude;
         
         // pass 2 use max area accordingly
         for(int i = 0; i < NUM_SPHERES; ++i)
@@ -605,7 +365,7 @@
             int start_index = i * SAMPLE_RANGE;
             int end_index = start_index + SAMPLE_RANGE;
             float area = 0;
-            float max = 0;
+            float local_max = 0;
             
             // sample points in range, take peak and area
             for(int i = start_index; i < end_index; ++i)
@@ -613,20 +373,14 @@
                
                 float this_point = fabs(data[i]);
                 area += this_point;
-                 /*
-                float this_point = fabs(self.fft.fftData[i]);
-                area += this_point;
-                  */
-                if(this_point > max)
+                if(this_point > local_max)
                 {
-                    max = this_point;
+                    local_max = this_point;
                 }
             }
             
-            //printf("Amplitude: %f\nArea: %f\n", max, area);
-            
             // measure y amplitude
-            float y_amplitude = max * 50.0;
+            float y_amplitude = local_max * amp_mult;
             
             // use half speed for ball up, half for ball down
             float ball_speed = area * speed_mult * 0.5;
@@ -697,6 +451,8 @@
     }
 }
 
+//------------------------------------------------------------------------------
+
 -(void)set_matte
 {
     for(int i = 0; i < self.spheres.count; ++i)
@@ -707,6 +463,8 @@
         material.shininess = 0.0;
     }
 }
+
+//------------------------------------------------------------------------------
 
 /*
  Sample data points from wavelength -> load into memory
@@ -735,5 +493,99 @@
     }
 }
 
+//------------------------------------------------------------------------------
+
+-(void) setSongTitle:(NSString*)title withArtist:(NSString *)artist
+{
+    self.title_label.text = title;
+    self.artist_label.text = artist;
+}
+
+
+//------------------------------------------------------------------------------
+
+//
+// Creates an EZAudioFile from an MPMediaItem representing a song coming from
+// an iOS device's iPod library. Since an MPMediaItem's URL is always prefixed
+// with an ipod:// path we must use the AVAssetExportSession to first export
+// the song to a file path that the EZAudioFile can actually find in the app's bundle.
+//
+- (void)openMediaItem:(MPMediaItem *)item
+           completion:(void(^)(EZAudioFile *audioFile, NSError *error))completion
+{
+    NSURL *url = [item valueForProperty:MPMediaItemPropertyAssetURL];
+    NSString *title = [item valueForProperty:MPMediaItemPropertyTitle];
+    if (url)
+    {
+        //
+        // Create an AVAudioExportSession to export the MPMediaItem to a non-iPod
+        // file path url we can actually use for an EZAudioFile
+        //
+        AVURLAsset *asset = [AVURLAsset assetWithURL:url];
+        AVAssetExportSession *exporter = [AVAssetExportSession exportSessionWithAsset:asset
+                                                                           presetName:AVAssetExportPresetAppleM4A];
+        exporter.outputFileType = @"com.apple.m4a-audio";
+        
+        NSArray *searchPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documentPath = [searchPaths objectAtIndex:0];
+        
+        NSString *exportURLPath = [documentPath stringByAppendingFormat:@"/%@.m4a", title];
+        NSURL *exportURL = [NSURL fileURLWithPath:exportURLPath];
+        exporter.outputURL = exportURL;
+        
+        //
+        // Delete any existing path in the bundle if one already exists
+        //
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        if ([fileManager fileExistsAtPath:exportURLPath])
+        {
+            NSError *error;
+            [fileManager removeItemAtPath:exportURLPath error:&error];
+            if (error)
+            {
+                NSLog(@"error deleting file: %@", error.localizedDescription);
+            }
+        }
+        
+        //
+        // Export the audio data using the AVAudioExportSession to the
+        // exportURL in the application bundle
+        //
+        [exporter exportAsynchronouslyWithCompletionHandler:^{
+            AVAssetExportSessionStatus status = [exporter status];
+            switch (status)
+            {
+                case AVAssetExportSessionStatusCompleted:
+                {
+                    EZAudioFile *_file = [EZAudioFile audioFileWithURL:exportURL];
+                    completion(_file ,nil);
+                    self.audio_file = _file;
+                    
+                    break;
+                }
+                case AVAssetExportSessionStatusFailed:
+                {
+                    completion(nil, exporter.error);
+                    break;
+                }
+                default:
+                {
+                    NSLog(@"Exporter status not fialed or complete: %ld", status);
+                    break;
+                }
+            }
+            
+        }];
+    }
+    else
+    {
+        NSError *error = [NSError errorWithDomain:@"com.myapp.sha"
+                                             code:404
+                                         userInfo:@{ NSLocalizedDescriptionKey : @"Media item's URL not found" }];
+        completion(nil, error);
+    }
+}
+
+//------------------------------------------------------------------------------
 
 @end

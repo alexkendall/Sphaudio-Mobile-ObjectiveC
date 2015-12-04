@@ -36,29 +36,25 @@
 @property NSTimer *animate_timer;
 @property UITabBar *tab_bar;
 @property NSArray *ball_colors;
+@property bool shinny_mode;
+@property EZOutput *output;
+@property MPMusicPlayerController *media_player;
+@property MPMediaItem *current_song;
+@property NSTimeInterval seek_time;
 
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"motion" ofType:@"mp3"]
 
 /**
  An EZAudioFile that will be used to load the audio file at the file path specified
  */
-@property (nonatomic, strong) EZAudioFile *audioFile;
+@property (nonatomic, strong) EZAudioFile *audio_file;
 
 //------------------------------------------------------------------------------
 
-/**
- An EZAudioPlayer that will be used for playback
- */
-@property (nonatomic, strong) EZAudioPlayer *player;
-
-//------------------------------------------------------------------------------
-
-/**
- The CoreGraphics based audio plot
- */
-@property EZAudioPlotGL *audioPlot;
-
-//------------------------------------------------------------------------------
+-(void)set_matte;
+-(void)set_shinny;
+-(void)toggle_play;
+-(void) setSongTitle:(NSString*)title withArtist:(NSString *)artist;
 
 @end
 

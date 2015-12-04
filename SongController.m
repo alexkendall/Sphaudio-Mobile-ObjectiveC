@@ -70,25 +70,26 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     // get song
     MPMediaItem *selected_song = self.songs_array[indexPath.row];
     
-    // get visualizer controller instance
+    // generate collection
+    MPMediaItemCollection *media_collection = [[MPMediaItemCollection alloc]initWithItems:@[selected_song]];
+    
+    // get visualizer controller instance and set playback of its player
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
     ViewController *vis_controller = app_delegate.vis_controller;
-    EZAudioPlayer *player = vis_controller.player;
     
-    [player openMediaItem:selected_song
-             completion:^(EZAudioFile *audioFile,
-                          NSError *error)
-    {
-        NSLog(@"audio file: %@, error: %@", audioFile, error);
-    }];
-    [player play];
+    // get media player
+    MPMusicPlayerController *media_player = vis_controller.media_player;
+    [media_player setQueueWithItemCollection:media_collection];
     
+    // play song
+    vis_controller.current_song = selected_song;
+    [vis_controller toggle_play];
     
     // get rid of keyboard if up
     [self.search_bar resignFirstResponder];
     
-    
-    
+    // update song title
+    [vis_controller setSongTitle:selected_song.title withArtist:selected_song.artist];
 }
 
 //------------------------------------------------------------------------------
@@ -134,16 +135,16 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 - (NSInteger)tableView:(UITableView *)tableView
  numberOfRowsInSection:(NSInteger)section
 {
-    printf("%d songs loaded from system library\n", self.songs_array.count);
+    printf("%lu songs loaded from system library\n", (unsigned long)self.songs_array.count);
     
     if(self.is_searching)
     {
-        printf("Setting music queue size to %d [queried items]", self.queried_refs.count);
+        printf("Setting music queue size to %lu [queried items]", (unsigned long)self.queried_refs.count);
         return self.queried_refs.count;
     }
     else
     {
-        printf("Setting music queue size to %d [regular queue]", self.songs_array.count);
+        printf("Setting music queue size to %lu [regular queue]", (unsigned long)self.songs_array.count);
         return self.songs_array.count;
     }
 }
@@ -183,7 +184,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     
     [self.search_bar resignFirstResponder];
     [self.table_view reloadData];
-    printf("queried items: %d", self.queried_refs.count);
+    printf("queried items: %lu", (unsigned long)self.queried_refs.count);
 }
 
 
