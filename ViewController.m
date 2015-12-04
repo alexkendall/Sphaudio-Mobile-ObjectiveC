@@ -19,8 +19,6 @@
 @import UIKit;
 @import SceneKit;
 
-static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
-
 @implementation ViewController
 
 - (void)viewDidLoad {
@@ -77,7 +75,7 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     SCNNode *spot_node = [[SCNNode alloc]init];
     spot_node.light = spot_light;
     spot_node.position = SCNVector3Make(0.0, 10.0, 0.0);
-
+    
     // ambient light
     SCNLight *ambient_light = [[SCNLight alloc]init];
     ambient_light.type = SCNLightTypeAmbient;
@@ -112,8 +110,6 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
             sphere_geometry.materials = materials;
             
             // shininess
-            
-            
             CGFloat x = origin_x + (c * step);
             CGFloat y = r * step;
             sphere_node.position = SCNVector3Make(x, 0.5, y);
@@ -156,7 +152,11 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     NSArray *constraints = @[constraint];
     camera_node.constraints = constraints;
     spot_node.constraints = constraints;
-
+    
+    
+    // add targets for playing song
+    [self.play_button addTarget:self action:@selector(play_song) forControlEvents:UIControlEventTouchUpInside];
+    self.playing = false;
     
     // configure play button
     CGFloat width = self.super_view.bounds.size.width * 0.5;
@@ -166,23 +166,24 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     
     // configure play button
     /*
-    self.play_button = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.play_button.frame = CGRectMake(offset_x, offset_y, width, height);
-    self.play_button.backgroundColor = [UIColor whiteColor];
-    self.play_button.layer.cornerRadius = height * 0.15;
-    
-    // configure title properties
-    [self.play_button setTitle:@"Play" forState:UIControlStateNormal];
-    [self.play_button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [self.play_button setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
-    [self.super_view addSubview:self.play_button];
-    */
+     self.play_button = [UIButton buttonWithType:UIButtonTypeCustom];
+     self.play_button.frame = CGRectMake(offset_x, offset_y, width, height);
+     self.play_button.backgroundColor = [UIColor whiteColor];
+     self.play_button.layer.cornerRadius = height * 0.15;
+     
+     // configure title properties
+     [self.play_button setTitle:@"Play" forState:UIControlStateNormal];
+     [self.play_button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+     [self.play_button setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
+     [self.super_view addSubview:self.play_button];
+     */
     
     // add targets for playing song
     [self.play_button addTarget:self action:@selector(play_song) forControlEvents:UIControlEventTouchUpInside];
     self.playing = false;
     
     // configure audio plot
+   
     CGFloat plot_height = self.view.bounds.size.height * 0.2;
     CGFloat plot_width = self.view.bounds.size.width;
     CGFloat plot_y = self.view.bounds.size.height - plot_height;
@@ -197,9 +198,6 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     self.audioPlot.plotType        = EZPlotTypeRolling;
     self.audioPlot.shouldFill      = NO;
     self.audioPlot.shouldMirror    = YES;
-    
-    // add plot to subview
-    //[self.super_view addSubview:self.audioPlot];
     
     
     // configure song title label
@@ -223,11 +221,7 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     
     [self.super_view addSubview:self.title_label];
     [self.super_view addSubview:self.artist_label];
-    
-    // generate thread for handling sphere animations and rendering
-    NSThread *ball_thread = [[NSThread alloc]initWithTarget:self selector:@selector(animate) object:nil];
-    [self animate];
-    
+
     
     // configure timer for updating spheres
     //self.amp_points = [[NSMutableArray alloc]init];
@@ -283,9 +277,6 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     
     self.ball_colors = @[light_blue, teal, soft_green, yellow_orange, red_orange, bright_red, dark_red];
     
-    // set to not shinny by default
-    self.shinny_mode = false;
-    
     
     //**************************************************************************************
     
@@ -318,12 +309,9 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
      */
     [self openFileWithFilePathURL:[NSURL fileURLWithPath:kAudioFileDefault]];
     
-
+    
     //**************************************************************************************
     
-    self.fft = [EZAudioFFTRolling fftWithWindowSize:FFTViewControllerFFTWindowSize
-                                         sampleRate:41000.0
-                                           delegate:self];
     
 }
 
@@ -561,25 +549,25 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
 }
 
 /*
--(void)toggle_queue
-{
-    printf("Bringing up queue");
-    
-    if(self.queue_is_up)
-    {
-        // take down song controller
-        self.queue_is_up = false;
-        [self.song_controller.view removeFromSuperview];
-        self.song_controller.table_view.reloadData;
-        [self.song_controller reset_state];
-    }
-    else
-    {
-        // put up song controller
-        self.queue_is_up = true;
-        [self.view addSubview:self.song_controller.view];
-    }
-}
+ -(void)toggle_queue
+ {
+ printf("Bringing up queue");
+ 
+ if(self.queue_is_up)
+ {
+ // take down song controller
+ self.queue_is_up = false;
+ [self.song_controller.view removeFromSuperview];
+ self.song_controller.table_view.reloadData;
+ [self.song_controller reset_state];
+ }
+ else
+ {
+ // put up song controller
+ self.queue_is_up = true;
+ [self.view addSubview:self.song_controller.view];
+ }
+ }
  */
 
 //------------------------------------------------------------------------------
@@ -604,26 +592,14 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
 {
     NSDate *methodStart = [NSDate date];
     
-    float max_fft = 0.0;
-    
     int NUM_POINTS = 1024;
     EZAudioFloatData *wave_data = [self.audioFile getWaveformDataWithNumberOfPoints:NUM_POINTS];
     float* data = [wave_data bufferForChannel:0];
     
-    [self.fft computeFFTWithBuffer:data withBufferSize:NUM_POINTS];
-    for(int i = 0; i < NUM_POINTS; ++i)
-    {
-        //printf("FFT VALUE: %f RAW VALUE: %f\n", self.fft.fftData[i], data[i]);
-        if(self.fft.fftData[i] > max_fft)
-        {
-            max_fft = self.fft.fftData[i];
-        }
-    }
-    
     int NUM_SPHERES = 25;
     int SAMPLE_RANGE = ceil(NUM_POINTS / 25.0);
     
-
+    
     if(data != nil)
     {
         float max_area = 0.0;
@@ -639,13 +615,9 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
             // sample points in range, take peak and area
             for(int i = start_index; i < end_index; ++i)
             {
-               
+                
                 float this_point = fabs(data[i]);
                 area += this_point;
-                 /*
-                float this_point = fabsf(self.fft.fftData[i]);
-                area += this_point;
-                 */
             }
             if(area > max_area)
             {
@@ -654,7 +626,6 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
         }
         
         printf("Max Area: %f",max_area);
-        printf("Max fft: %f",max_fft);
         
         
         // get max area... ball responsible for this frequency will be in the air the longest
@@ -674,13 +645,9 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
             // sample points in range, take peak and area
             for(int i = start_index; i < end_index; ++i)
             {
-               
+                
                 float this_point = fabs(data[i]);
                 area += this_point;
-                 /*
-                float this_point = fabs(self.fft.fftData[i]);
-                area += this_point;
-                  */
                 if(this_point > max)
                 {
                     max = this_point;
@@ -709,13 +676,13 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
                 up_color = self.ball_colors[1];
             }
             else if(t_value < 0.34)
-            //else if(t_value < 0.01)
+                //else if(t_value < 0.01)
             {
                 down_color = self.ball_colors[1];
                 up_color = self.ball_colors[2];
             }
             else if(t_value < 0.5)
-            //else if(t_value < 0.1)
+                //else if(t_value < 0.1)
             {
                 down_color = self.ball_colors[2];
                 up_color = self.ball_colors[3];
@@ -761,6 +728,8 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
     }
 }
 
+//------------------------------------------------------------------------------
+
 -(void)set_matte
 {
     for(int i = 0; i < self.spheres.count; ++i)
@@ -771,6 +740,8 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
         material.shininess = 0.0;
     }
 }
+
+//------------------------------------------------------------------------------
 
 /*
  Sample data points from wavelength -> load into memory
@@ -787,31 +758,16 @@ static vDSP_Length const FFTViewControllerFFTWindowSize = 4096;
         sphere.position = SCNVector3Make(sphere.position.x, sphere.amplitude, sphere.position.z);
         sphere.geometry.materials[0].diffuse.contents = sphere.up_color;
         [SCNTransaction setCompletionBlock:^
-        {
-            [SCNTransaction begin];
-            [SCNTransaction setAnimationDuration:sphere.duration];
-            sphere.position = SCNVector3Make(sphere.position.x, 0.5, sphere.position.z);
-            sphere.geometry.materials[0].diffuse.contents = sphere.down_color;
-            [SCNTransaction commit];
-                 
-        }];
+         {
+             [SCNTransaction begin];
+             [SCNTransaction setAnimationDuration:sphere.duration];
+             sphere.position = SCNVector3Make(sphere.position.x, 0.5, sphere.position.z);
+             sphere.geometry.materials[0].diffuse.contents = sphere.down_color;
+             [SCNTransaction commit];
+             
+         }];
         [SCNTransaction commit];
     }
 }
-
-//------------------------------------------------------------------------------
-#pragma mark - EZAudioFFTDelegate
-//------------------------------------------------------------------------------
-
-- (void) fft:(EZAudioFFT *)fft
- updatedWithFFTData:(float *)fftData
-         bufferSize:(vDSP_Length)bufferSize
-{
-    float maxFrequency = [fft maxFrequency];
-    NSString *noteName = [EZAudioUtilities noteNameStringForFrequency:maxFrequency
-                                                        includeOctave:YES];
-}
-
-//------------------------------------------------------------------------------
 
 @end
