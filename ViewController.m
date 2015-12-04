@@ -14,6 +14,7 @@
 #import "NextButton.h"
 #include "Interpolate.h"
 #include "SPHNode.h"
+#include "AppDelegate.h"
 
 @import MediaPlayer;
 @import UIKit;
@@ -218,37 +219,27 @@
     // set seek time to 0
     self.seek_time = 0.0;
     
+    // load up all of systems music into queue, load first song into player
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    SongController *song_controller = app_delegate.songs_controller;
+    [song_controller.table_view reloadData];
+    
+    MPMediaItem *first_song = song_controller.songs_array.firstObject;
+    self.current_song = first_song;
+    [self setSongTitle:first_song.title withArtist:first_song.artist];
+    if(first_song != nil)
+    {
+        [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
+                                                           NSError *error)
+         {
+             NSLog(@"audio file: %@, error: %@", audioFile, error);
+         }];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-
--(void)play_song
-{
-    if(self.playing)
-    {
-        [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
-                 NSError *error)
-        {
-            NSLog(@"audio file: %@, error: %@", audioFile, error);
-        }];
-
-        
-        printf("pausing song\n");
-        [self.play_button setTitle:@"Play" forState:UIControlStateNormal];
-        self.playing = false;
-        [self.media_player pause];
-    }
-    else
-    {
-        printf("playing song\n");
-        [self.play_button setTitle:@"Pause" forState:UIControlStateNormal];
-        self.playing = true;
-        [self.media_player play];
-        
-    }
 }
 
 //------------------------------------------------------------------------------
@@ -268,17 +259,16 @@
         [self.media_player pause];
         [self.update_timer invalidate];
         [self.animate_timer invalidate];
+        [self.play_button set_playing];
     }
     else
     {
         self.playing = true;
         [self.media_player play];
-        
         self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
         [self performSelectorInBackground:@selector(update_timer) withObject:nil];
-        
-        
         self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
+        [self.play_button set_paused];
     }
 }
 

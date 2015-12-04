@@ -83,13 +83,18 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     
     // play song
     vis_controller.current_song = selected_song;
-    [vis_controller toggle_play];
+    [vis_controller.media_player play];
+    vis_controller.playing = true;
+    [vis_controller.play_button set_paused];
     
     // get rid of keyboard if up
     [self.search_bar resignFirstResponder];
     
     // update song title
     [vis_controller setSongTitle:selected_song.title withArtist:selected_song.artist];
+    
+    // update seek time
+    vis_controller.seek_time = 0.0;
 }
 
 //------------------------------------------------------------------------------
