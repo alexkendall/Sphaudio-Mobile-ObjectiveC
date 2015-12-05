@@ -83,9 +83,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     
     // play song
     vis_controller.current_song = selected_song;
-    [vis_controller.media_player play];
-    vis_controller.playing = true;
-    [vis_controller.play_button set_paused];
+    [vis_controller play];
     
     // get rid of keyboard if up
     [self.search_bar resignFirstResponder];

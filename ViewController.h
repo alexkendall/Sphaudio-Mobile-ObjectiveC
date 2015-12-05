@@ -54,6 +54,7 @@
 -(void)set_matte;
 -(void)set_shinny;
 -(void)toggle_play;
+-(void)play;
 -(void) setSongTitle:(NSString*)title withArtist:(NSString *)artist;
 
 @end

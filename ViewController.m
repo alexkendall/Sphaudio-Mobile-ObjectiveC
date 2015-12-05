@@ -57,6 +57,20 @@
     SCNNode *spot_node = [[SCNNode alloc]init];
     spot_node.light = spot_light;
     spot_node.position = SCNVector3Make(0.0, 10.0, 0.0);
+    
+    // point light
+    SCNLight *point_light = [[SCNLight alloc]init];
+    point_light.type = SCNLightTypeOmni;
+    point_light.castsShadow = true;
+    point_light.spotInnerAngle = 0.0;
+    point_light.spotOuterAngle = 45.0;
+    point_light.attenuationEndDistance = 20.0;
+    
+    SCNNode *point_node = [[SCNNode alloc]init];
+    point_node.light = point_light;
+    point_node.position = SCNVector3Make(0.0, 10.0, 20.0);
+    
+
 
     // ambient light
     SCNLight *ambient_light = [[SCNLight alloc]init];
@@ -124,6 +138,7 @@
     [scene.rootNode addChildNode:floor_node];
     [scene.rootNode addChildNode:spot_node];
     [scene.rootNode addChildNode:camera_node];
+    [scene.rootNode addChildNode:point_node];
     
     SCNNode *center_node = [[SCNNode alloc]init];
     center_node.position = SCNVector3Make(0.0, 0.0, 6.0);
@@ -235,6 +250,8 @@
              NSLog(@"audio file: %@, error: %@", audioFile, error);
          }];
     }
+    [self.media_player pause];
+    self.playing = false;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -246,11 +263,6 @@
 
 -(void)toggle_play
 {
-    [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
-                                                                                NSError *error)
-     {
-         NSLog(@"audio file: %@, error: %@", audioFile, error);
-     }];
     printf("\nPlay toggle\n");
     
     if(self.playing)
@@ -263,13 +275,39 @@
     }
     else
     {
-        self.playing = true;
-        [self.media_player play];
+        [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
+                                                           NSError *error)
+         {
+             NSLog(@"audio file: %@, error: %@", audioFile, error);
+             
+             printf("Opened item!");
+             self.playing = true;
+             [self.media_player play];
+             [self.play_button set_paused];
+         }];
         self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
         [self performSelectorInBackground:@selector(update_timer) withObject:nil];
         self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
-        [self.play_button set_paused];
     }
+}
+
+-(void)play
+{
+    [self.update_timer invalidate];
+    [self.animate_timer invalidate];
+    [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
+                                                       NSError *error)
+     {
+         NSLog(@"audio file: %@, error: %@", audioFile, error);
+
+         printf("Opened item!");
+         self.playing = true;
+         [self.media_player play];
+         [self.play_button set_paused];
+     }];
+    self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
+    [self performSelectorInBackground:@selector(update_timer) withObject:nil];
+    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
 }
 
 //------------------------------------------------------------------------------
