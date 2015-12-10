@@ -244,13 +244,12 @@ typedef struct
     // Determine if the file actually exists
     //
     CFURLRef url = self.info->sourceURL;
-    
     //
     // Create an ExtAudioFileRef for the file handle
     //
     [EZAudioUtilities checkResult:ExtAudioFileOpenURL(url, &self.info->extAudioFileRef)
      operation:"Failed to create ExtAudioFileRef"];
-    
+
     // Get the underlying AudioFileID
     //
     UInt32 propSize = sizeof(self.info->audioFileID);

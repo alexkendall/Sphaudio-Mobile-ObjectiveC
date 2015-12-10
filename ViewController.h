@@ -55,4 +55,3 @@
 -(void) setSongTitle:(NSString*)title withArtist:(NSString *)artist;
 
 @end
-

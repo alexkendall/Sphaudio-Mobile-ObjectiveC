@@ -41,7 +41,7 @@
     
     // configure table view
     UIColor *dark_gray = [[UIColor alloc]initWithRed:0.2 green:0.2 blue:0.2 alpha:1.0];
-    CGFloat table_height = self.view.frame.size.height - self.search_bar.bounds.size.height;
+    CGFloat table_height = self.view.frame.size.height - self.search_bar.bounds.size.height + 17.0;
     self.table_view = [[UITableView alloc]initWithFrame:CGRectMake(0.0, search_height, self.view.frame.size.width, table_height) style:UITableViewStylePlain];
     self.table_view.delegate = self;
     self.table_view.dataSource = self;
@@ -164,8 +164,16 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
 {
+    printf("queried items: %lu", (unsigned long)self.queried_refs.count);
+}
+
+
+- (void)searchBar:(UISearchBar *)searchBar
+    textDidChange:(NSString *)searchText
+{
+    printf("text did change");
     // reset queried reference array
-     self.queried_refs = [[NSMutableArray alloc]init];
+    self.queried_refs = [[NSMutableArray alloc]init];
     
     // seaarch for songs with text specified -
     for(int i = 0; i < self.songs_array.count; ++i)
@@ -192,22 +200,12 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     {
         self.is_searching = false;
     }
-    
-    [self.search_bar resignFirstResponder];
-    [self.table_view reloadData];
-    printf("queried items: %lu", (unsigned long)self.queried_refs.count);
-}
-
-
-- (void)searchBar:(UISearchBar *)searchBar
-    textDidChange:(NSString *)searchText
-{
-    
     if([searchText length] == 0)
     {
         [self reset_state];
         [searchBar resignFirstResponder];
     }
+    [self.table_view reloadData];
 }
 
 #pragma mark - Utility

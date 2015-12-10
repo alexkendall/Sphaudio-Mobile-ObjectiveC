@@ -235,7 +235,7 @@
     SongController *song_controller = app_delegate.songs_controller;
     [song_controller.table_view reloadData];
     
- 
+    
     MPMediaItem *first_song = song_controller.songs_array.firstObject;
     if(first_song != nil)
     {
@@ -257,7 +257,7 @@
 
 -(void)toggle_play
 {
-
+    
     if(self.playing)
     {
         [self pause];
@@ -271,8 +271,8 @@
 -(void)play
 {
     printf("playing song");
-    [self.player play];
     self.playing = true;
+    [self.player play];
     [self.play_button set_paused];
 }
 
@@ -326,14 +326,14 @@
         sphere.position = SCNVector3Make(sphere.position.x, sphere.amplitude, sphere.position.z);
         sphere.geometry.materials[0].diffuse.contents = sphere.up_color;
         [SCNTransaction setCompletionBlock:^
-        {
-            [SCNTransaction begin];
-            [SCNTransaction setAnimationDuration:sphere.duration];
-            sphere.position = SCNVector3Make(sphere.position.x, 0.5, sphere.position.z);
-            sphere.geometry.materials[0].diffuse.contents = sphere.down_color;
-            [SCNTransaction commit];
-                 
-        }];
+         {
+             [SCNTransaction begin];
+             [SCNTransaction setAnimationDuration:sphere.duration];
+             sphere.position = SCNVector3Make(sphere.position.x, 0.5, sphere.position.z);
+             sphere.geometry.materials[0].diffuse.contents = sphere.down_color;
+             [SCNTransaction commit];
+             
+         }];
         [SCNTransaction commit];
     }
 }
@@ -357,7 +357,7 @@
  withNumberOfChannels:(UInt32)numberOfChannels
           inAudioFile:(EZAudioFile *)audioFile
 {
-
+    
     dispatch_async(dispatch_get_main_queue(), ^{
     });
     
@@ -416,7 +416,7 @@
             sphere.geometry.materials[0].diffuse.contents = self.ball_colors[5];
         }
     }
-
+    
 }
 
 //------------------------------------------------------------------------------
@@ -425,7 +425,7 @@
     updatedPosition:(SInt64)framePosition
         inAudioFile:(EZAudioFile *)audioFile
 {
-
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         
     });
