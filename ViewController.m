@@ -259,19 +259,20 @@
 
 -(void)toggle_play
 {
-    printf("\nPlay toggle\n");
-    
+
     if(self.playing)
     {
+        printf("pausing song");
         self.playing = false;
         [self.player pause];
         [self.play_button set_playing];
     }
     else
     {
+        printf("playing song");
         self.playing = true;
-        [self.play_button set_paused];
         [self.player play];
+        [self.play_button set_paused];
     }
 }
 
