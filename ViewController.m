@@ -238,38 +238,16 @@
     [song_controller.table_view reloadData];
     
  
-    self.first_song_loaded = false;
     MPMediaItem *first_song = song_controller.songs_array.firstObject;
-       /*
-    self.current_song = first_song;
-    [self setSongTitle:first_song.title withArtist:first_song.artist];
-    if(first_song != nil)
-    {
-        [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
-                                                           NSError *error)
-         {
-             NSLog(@"audio file: %@, error: %@", audioFile, error);
-             self.first_song_loaded = true;
-         }];
-    }
-    [self.media_player pause];
-    self.playing = false;
-    */
-    //
-    
-    
-    
     if(first_song != nil)
     {
         NSURL *item_url = [first_song valueForKey:MPMediaItemPropertyAssetURL];
+        [self setSongTitle:first_song.title withArtist:first_song.artist];
         self.audio_file = [[EZAudioFile alloc]initWithURL: item_url];
         self.player = [[EZAudioPlayer alloc]initWithAudioFile:self.audio_file delegate:self];
         self.playing = false;
-        [self.play_button set_paused];
-        [self toggle_play];
+        [self.play_button set_playing];
     }
-
-    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -287,219 +265,21 @@
     {
         self.playing = false;
         [self.player pause];
-        [self.update_timer invalidate];
-        [self.animate_timer invalidate];
         [self.play_button set_playing];
     }
     else
     {
-        [self.play_button set_paused];
         self.playing = true;
+        [self.play_button set_paused];
         [self.player play];
-        
-        /*
-        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
-        [self performSelectorInBackground:@selector(update_timer) withObject:nil];
-        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
-         */
-        /*
-        if(self.first_song_loaded)
-        {
-            self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
-            [self performSelectorInBackground:@selector(update_timer) withObject:nil];
-            self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
-            self.playing = true;
-            [self.player play];
-            [self.play_button set_paused];
-        }
-         */
-        /*
-        [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
-                                                           NSError *error)
-         {
-             NSLog(@"audio file: %@, error: %@", audioFile, error);
-             
-             printf("Opened item!");
-             self.playing = true;
-             [self.media_player play];
-             [self.play_button set_paused];
-         }];
-        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
-        [self performSelectorInBackground:@selector(update_timer) withObject:nil];
-        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
-         */
     }
 }
 
 -(void)play
 {
-    [self.update_timer invalidate];
-    [self.animate_timer invalidate];
     [self.player play];
     self.playing = true;
     [self.play_button set_paused];
-    
-    //self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
-    //[self performSelectorInBackground:@selector(update_timer) withObject:nil];
-    //self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
-}
-
-//------------------------------------------------------------------------------
-
--(void)begin_animation
-{
-    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(animate) userInfo:nil repeats:true];
-}
-
--(void) begin_retrieval
-{
-    [self performSelectorInBackground:@selector(get_data) withObject:nil];
-}
-
-//------------------------------------------------------------------------------
-
-- (void)get_data
-{
-    NSDate *methodStart = [NSDate date];
-    
-    // get sample rate
-    float SAMPLE_RATE = self.audio_file.totalClientFrames / self.audio_file.duration;
-    printf("SAMPLE RATE : %f\n", SAMPLE_RATE);
-    
-    // get current time in song
-    self.seek_time += 1.0;
-    
-    // seek to frame
-    [self.audio_file seekToFrame:SAMPLE_RATE * self.seek_time];
-    
-    int NUM_POINTS = 1024;
-    EZAudioFloatData *wave_data = [self.audio_file getWaveformDataWithNumberOfPoints:NUM_POINTS];
-    float* data = [wave_data bufferForChannel:0];
-    
-    NSDate *methodFinish = [NSDate date];
-    NSTimeInterval executionTime = [methodFinish timeIntervalSinceDate:methodStart];
-    NSLog(@"executionTime = %f", executionTime);
-    
-    
-    int NUM_SPHERES = 25;
-    int SAMPLE_RANGE = ceil(NUM_POINTS / 25.0);
-    
-
-    if(data != nil)
-    {
-        float max_area = 0.0;
-        float global_max_amplitude = 0.0;
-        // pass 1 get max area, use this for speed
-        for(int i = 0; i < NUM_SPHERES; ++i)
-        {
-            // set sample start and end indexes
-            int start_index = i * SAMPLE_RANGE;
-            int end_index = start_index + SAMPLE_RANGE;
-            float area = 0;
-            
-            // sample points in range, take peak and area
-            for(int i = start_index; i < end_index; ++i)
-            {
-               
-                float this_point = fabs(data[i]);
-                area += this_point;
-                if(this_point > global_max_amplitude)
-                {
-                    global_max_amplitude = this_point;
-                }
-            }
-            if(area > max_area)
-            {
-                max_area = area;
-            }
-        }
-        
-        printf("Max Area: %f",max_area);
-        
-        // get max area... ball responsible for this frequency will be in the air the longest
-        float sample_speed = 2.0;
-        float speed_mult = sample_speed / max_area;
-        
-        float max_y = 12.0;
-        float amp_mult = max_y / global_max_amplitude;
-        
-        // pass 2 use max area accordingly
-        for(int i = 0; i < NUM_SPHERES; ++i)
-        {
-            
-            // set sample start and end indexes
-            int start_index = i * SAMPLE_RANGE;
-            int end_index = start_index + SAMPLE_RANGE;
-            float area = 0;
-            float local_max = 0;
-            
-            // sample points in range, take peak and area
-            for(int i = start_index; i < end_index; ++i)
-            {
-               
-                float this_point = fabs(data[i]);
-                area += this_point;
-                if(this_point > local_max)
-                {
-                    local_max = this_point;
-                }
-            }
-            
-            // measure y amplitude
-            float y_amplitude = local_max * amp_mult;
-            
-            // use half speed for ball up, half for ball down
-            float ball_speed = area * speed_mult * 0.5;
-            
-            // determine ball color according to frequency
-            
-            float t_value = 0.0;
-            t_value = area / max_area;
-            UIColor *up_color = [[UIColor alloc]init];
-            UIColor *down_color = [[UIColor alloc]init];
-            
-            //if(t_value < 0.001)
-            if(t_value < 0.17)
-            {
-                down_color = self.ball_colors[0];
-                up_color = self.ball_colors[1];
-            }
-            else if(t_value < 0.34)
-            //else if(t_value < 0.01)
-            {
-                down_color = self.ball_colors[1];
-                up_color = self.ball_colors[2];
-            }
-            else if(t_value < 0.5)
-            //else if(t_value < 0.1)
-            {
-                down_color = self.ball_colors[2];
-                up_color = self.ball_colors[3];
-            }
-            //else if(t_value < 0.15)
-            else if(t_value < 0.68)
-            {
-                down_color = self.ball_colors[3];
-                up_color = self.ball_colors[4];
-            }
-            else if(t_value < 0.85)
-            {
-                down_color = self.ball_colors[4];
-                up_color = self.ball_colors[5];
-            }
-            else
-            {
-                down_color = self.ball_colors[5];
-                up_color = self.ball_colors[6];
-            }
-            
-            // set properties of sphere for rendering
-            SPHNode *sphere_node = self.spheres[i];
-            [sphere_node set_color:down_color with_peak_color:up_color with_amplitude:y_amplitude withDuration:ball_speed];
-        }
-    }
-    
-
 }
 
 //------------------------------------------------------------------------------
@@ -587,7 +367,6 @@
     int start_index = 0;
     int end_index = 0;
     
-    
     // first pass
     for(int i = 0; i < num_spheres; ++i)
     {
@@ -600,6 +379,7 @@
             amp_sum += _buffer[j];
         }
         float avg_amplitude = amp_sum / span;
+        
         float mult = 100;
         float y = avg_amplitude * mult;
         if(y < 0.5)
@@ -608,7 +388,34 @@
         }
         SCNNode *sphere = self.spheres[i];
         sphere.position = SCNVector3Make(sphere.position.x, y, sphere.position.z);
+        
+        if(y < 2.0)
+        {
+            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[0];
+        }
+        else if(y < 4.0)
+            //else if(t_value < 0.01)
+        {
+            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[1];
+        }
+        else if(y < 6.0)
+        {
+            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[0];
+        }
+        else if(y < 8.0)
+        {
+            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[0];
+        }
+        else if(y < 9.0)
+        {
+            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[4];
+        }
+        else
+        {
+            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[5];
+        }
     }
+
 }
 
 //------------------------------------------------------------------------------
@@ -619,11 +426,8 @@
 {
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        printf("updated position");
         
     });
-    
-    
 }
 
 //------------------------------------------------------------------------------
