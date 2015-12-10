@@ -41,13 +41,11 @@
 @property MPMusicPlayerController *media_player;
 @property MPMediaItem *current_song;
 @property NSTimeInterval seek_time;
+@property bool first_song_loaded;
+@property EZAudioPlayer *player;
+@property EZAudioFile *audio_file;
 
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"motion" ofType:@"mp3"]
-
-/**
- An EZAudioFile that will be used to load the audio file at the file path specified
- */
-@property (nonatomic, strong) EZAudioFile *audio_file;
 
 //------------------------------------------------------------------------------
 

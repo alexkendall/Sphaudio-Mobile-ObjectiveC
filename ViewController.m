@@ -70,8 +70,6 @@
     point_node.light = point_light;
     point_node.position = SCNVector3Make(0.0, 10.0, 20.0);
     
-
-
     // ambient light
     SCNLight *ambient_light = [[SCNLight alloc]init];
     ambient_light.type = SCNLightTypeAmbient;
@@ -239,7 +237,10 @@
     SongController *song_controller = app_delegate.songs_controller;
     [song_controller.table_view reloadData];
     
+ 
+    self.first_song_loaded = false;
     MPMediaItem *first_song = song_controller.songs_array.firstObject;
+       /*
     self.current_song = first_song;
     [self setSongTitle:first_song.title withArtist:first_song.artist];
     if(first_song != nil)
@@ -248,10 +249,27 @@
                                                            NSError *error)
          {
              NSLog(@"audio file: %@, error: %@", audioFile, error);
+             self.first_song_loaded = true;
          }];
     }
     [self.media_player pause];
     self.playing = false;
+    */
+    //
+    
+    
+    
+    if(first_song != nil)
+    {
+        NSURL *item_url = [first_song valueForKey:MPMediaItemPropertyAssetURL];
+        self.audio_file = [[EZAudioFile alloc]initWithURL: item_url];
+        self.player = [[EZAudioPlayer alloc]initWithAudioFile:self.audio_file delegate:self];
+        self.playing = false;
+        [self.play_button set_paused];
+        [self toggle_play];
+    }
+
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -268,13 +286,34 @@
     if(self.playing)
     {
         self.playing = false;
-        [self.media_player pause];
+        [self.player pause];
         [self.update_timer invalidate];
         [self.animate_timer invalidate];
         [self.play_button set_playing];
     }
     else
     {
+        [self.play_button set_paused];
+        self.playing = true;
+        [self.player play];
+        
+        /*
+        self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
+        [self performSelectorInBackground:@selector(update_timer) withObject:nil];
+        self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
+         */
+        /*
+        if(self.first_song_loaded)
+        {
+            self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
+            [self performSelectorInBackground:@selector(update_timer) withObject:nil];
+            self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
+            self.playing = true;
+            [self.player play];
+            [self.play_button set_paused];
+        }
+         */
+        /*
         [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
                                                            NSError *error)
          {
@@ -288,6 +327,7 @@
         self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
         [self performSelectorInBackground:@selector(update_timer) withObject:nil];
         self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
+         */
     }
 }
 
@@ -295,19 +335,13 @@
 {
     [self.update_timer invalidate];
     [self.animate_timer invalidate];
-    [self openMediaItem:self.current_song completion:^(EZAudioFile *audioFile,
-                                                       NSError *error)
-     {
-         NSLog(@"audio file: %@, error: %@", audioFile, error);
-
-         printf("Opened item!");
-         self.playing = true;
-         [self.media_player play];
-         [self.play_button set_paused];
-     }];
-    self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
-    [self performSelectorInBackground:@selector(update_timer) withObject:nil];
-    self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
+    [self.player play];
+    self.playing = true;
+    [self.play_button set_paused];
+    
+    //self.update_timer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(begin_retrieval) userInfo:nil repeats:true];
+    //[self performSelectorInBackground:@selector(update_timer) withObject:nil];
+    //self.animate_timer = [NSTimer scheduledTimerWithTimeInterval:4.0 target:self selector:@selector(begin_animation) userInfo:nil repeats:false];
 }
 
 //------------------------------------------------------------------------------
@@ -341,6 +375,10 @@
     int NUM_POINTS = 1024;
     EZAudioFloatData *wave_data = [self.audio_file getWaveformDataWithNumberOfPoints:NUM_POINTS];
     float* data = [wave_data bufferForChannel:0];
+    
+    NSDate *methodFinish = [NSDate date];
+    NSTimeInterval executionTime = [methodFinish timeIntervalSinceDate:methodStart];
+    NSLog(@"executionTime = %f", executionTime);
     
     
     int NUM_SPHERES = 25;
@@ -461,9 +499,7 @@
         }
     }
     
-    NSDate *methodFinish = [NSDate date];
-    NSTimeInterval executionTime = [methodFinish timeIntervalSinceDate:methodStart];
-    NSLog(@"executionTime = %f", executionTime);
+
 }
 
 //------------------------------------------------------------------------------
@@ -531,87 +567,63 @@
 
 
 //------------------------------------------------------------------------------
+#pragma mark - EZAudioPlayerDelegate
+//------------------------------------------------------------------------------
 
-//
-// Creates an EZAudioFile from an MPMediaItem representing a song coming from
-// an iOS device's iPod library. Since an MPMediaItem's URL is always prefixed
-// with an ipod:// path we must use the AVAssetExportSession to first export
-// the song to a file path that the EZAudioFile can actually find in the app's bundle.
-//
-- (void)openMediaItem:(MPMediaItem *)item
-           completion:(void(^)(EZAudioFile *audioFile, NSError *error))completion
+- (void)  audioPlayer:(EZAudioPlayer *)audioPlayer
+          playedAudio:(float **)buffer
+       withBufferSize:(UInt32)bufferSize
+ withNumberOfChannels:(UInt32)numberOfChannels
+          inAudioFile:(EZAudioFile *)audioFile
 {
-    NSURL *url = [item valueForProperty:MPMediaItemPropertyAssetURL];
-    NSString *title = [item valueForProperty:MPMediaItemPropertyTitle];
-    if (url)
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+    });
+    
+    
+    float *_buffer = buffer[0]; // sample one channel
+    int num_spheres = 25;
+    int span = bufferSize / num_spheres;
+    int start_index = 0;
+    int end_index = 0;
+    
+    
+    // first pass
+    for(int i = 0; i < num_spheres; ++i)
     {
-        //
-        // Create an AVAudioExportSession to export the MPMediaItem to a non-iPod
-        // file path url we can actually use for an EZAudioFile
-        //
-        AVURLAsset *asset = [AVURLAsset assetWithURL:url];
-        AVAssetExportSession *exporter = [AVAssetExportSession exportSessionWithAsset:asset
-                                                                           presetName:AVAssetExportPresetAppleM4A];
-        exporter.outputFileType = @"com.apple.m4a-audio";
-        
-        NSArray *searchPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        NSString *documentPath = [searchPaths objectAtIndex:0];
-        
-        NSString *exportURLPath = [documentPath stringByAppendingFormat:@"/%@.m4a", title];
-        NSURL *exportURL = [NSURL fileURLWithPath:exportURLPath];
-        exporter.outputURL = exportURL;
-        
-        //
-        // Delete any existing path in the bundle if one already exists
-        //
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        if ([fileManager fileExistsAtPath:exportURLPath])
+        start_index = span * i;
+        end_index = start_index + span;
+        float amp_sum = 0;
+        for(int j = start_index; j < end_index;)
         {
-            NSError *error;
-            [fileManager removeItemAtPath:exportURLPath error:&error];
-            if (error)
-            {
-                NSLog(@"error deleting file: %@", error.localizedDescription);
-            }
+            ++j;
+            amp_sum += _buffer[j];
         }
+        float avg_amplitude = amp_sum / span;
+        float mult = 100;
+        float y = avg_amplitude * mult;
+        if(y < 0.5)
+        {
+            y = 0.5;
+        }
+        SCNNode *sphere = self.spheres[i];
+        sphere.position = SCNVector3Make(sphere.position.x, y, sphere.position.z);
+    }
+}
+
+//------------------------------------------------------------------------------
+
+- (void)audioPlayer:(EZAudioPlayer *)audioPlayer
+    updatedPosition:(SInt64)framePosition
+        inAudioFile:(EZAudioFile *)audioFile
+{
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        printf("updated position");
         
-        //
-        // Export the audio data using the AVAudioExportSession to the
-        // exportURL in the application bundle
-        //
-        [exporter exportAsynchronouslyWithCompletionHandler:^{
-            AVAssetExportSessionStatus status = [exporter status];
-            switch (status)
-            {
-                case AVAssetExportSessionStatusCompleted:
-                {
-                    EZAudioFile *_file = [EZAudioFile audioFileWithURL:exportURL];
-                    completion(_file ,nil);
-                    self.audio_file = _file;
-                    
-                    break;
-                }
-                case AVAssetExportSessionStatusFailed:
-                {
-                    completion(nil, exporter.error);
-                    break;
-                }
-                default:
-                {
-                    NSLog(@"Exporter status not fialed or complete: %ld", status);
-                    break;
-                }
-            }
-            
-        }];
-    }
-    else
-    {
-        NSError *error = [NSError errorWithDomain:@"com.myapp.sha"
-                                             code:404
-                                         userInfo:@{ NSLocalizedDescriptionKey : @"Media item's URL not found" }];
-        completion(nil, error);
-    }
+    });
+    
+    
 }
 
 //------------------------------------------------------------------------------

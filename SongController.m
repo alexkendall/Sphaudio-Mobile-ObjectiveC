@@ -41,7 +41,7 @@
     
     // configure table view
     UIColor *dark_gray = [[UIColor alloc]initWithRed:0.2 green:0.2 blue:0.2 alpha:1.0];
-    CGFloat table_height = self.view.frame.size.height;
+    CGFloat table_height = self.view.frame.size.height - self.search_bar.bounds.size.height;
     self.table_view = [[UITableView alloc]initWithFrame:CGRectMake(0.0, search_height, self.view.frame.size.width, table_height) style:UITableViewStylePlain];
     self.table_view.delegate = self;
     self.table_view.dataSource = self;
@@ -70,19 +70,26 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     // get song
     MPMediaItem *selected_song = self.songs_array[indexPath.row];
     
+    // get url
+    NSURL *song_url = [selected_song valueForKey:MPMediaItemPropertyAssetURL];
+    
     // generate collection
-    MPMediaItemCollection *media_collection = [[MPMediaItemCollection alloc]initWithItems:@[selected_song]];
+    //MPMediaItemCollection *media_collection = [[MPMediaItemCollection alloc]initWithItems:@[selected_song]];
     
     // get visualizer controller instance and set playback of its player
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
     ViewController *vis_controller = app_delegate.vis_controller;
     
     // get media player
-    MPMusicPlayerController *media_player = vis_controller.media_player;
-    [media_player setQueueWithItemCollection:media_collection];
+    EZAudioPlayer *player = vis_controller.player;
+    
+    EZAudioFile *file = vis_controller.audio_file;
+    file = [[EZAudioFile alloc]initWithURL:song_url];
     
     // play song
-    vis_controller.current_song = selected_song;
+    //vis_controller.current_song = selected_song;
+    //[vis_controller play];
+    player.audioFile = file;
     [vis_controller play];
     
     // get rid of keyboard if up
