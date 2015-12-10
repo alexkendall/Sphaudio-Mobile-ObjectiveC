@@ -68,11 +68,18 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     printf("Selected row %ld\n", (long)indexPath.row);
     
     // get song
-    MPMediaItem *selected_song = self.songs_array[indexPath.row];
+     MPMediaItem *selected_song;
+    if(self.is_searching)
+    {
+        selected_song = self.queried_refs[indexPath.row];
+    }
+    else
+    {
+        selected_song = self.songs_array[indexPath.row];
+    }
     
     // get url
     NSURL *song_url = [selected_song valueForKey:MPMediaItemPropertyAssetURL];
-    
     
     // get visualizer controller instance and set playback of its player
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
@@ -87,6 +94,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     // play song
     player.audioFile = file;
     [vis_controller play];
+    vis_controller.playing = true;
     
     // get rid of keyboard if up
     [self.search_bar resignFirstResponder];
