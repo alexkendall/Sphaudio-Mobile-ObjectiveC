@@ -73,8 +73,6 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     // get url
     NSURL *song_url = [selected_song valueForKey:MPMediaItemPropertyAssetURL];
     
-    // generate collection
-    //MPMediaItemCollection *media_collection = [[MPMediaItemCollection alloc]initWithItems:@[selected_song]];
     
     // get visualizer controller instance and set playback of its player
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
@@ -87,8 +85,6 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     file = [[EZAudioFile alloc]initWithURL:song_url];
     
     // play song
-    //vis_controller.current_song = selected_song;
-    //[vis_controller play];
     player.audioFile = file;
     [vis_controller play];
     
@@ -97,9 +93,6 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     
     // update song title
     [vis_controller setSongTitle:selected_song.title withArtist:selected_song.artist];
-    
-    // update seek time
-    vis_controller.seek_time = 0.0;
 }
 
 //------------------------------------------------------------------------------

@@ -229,8 +229,6 @@
     // confihgure audio player
     self.media_player = [[MPMusicPlayerController alloc]init];
     
-    // set seek time to 0
-    self.seek_time = 0.0;
     
     // load up all of systems music into queue, load first song into player
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
@@ -262,26 +260,28 @@
 
     if(self.playing)
     {
-        printf("pausing song");
-        self.playing = false;
-        [self.player pause];
-        [self.play_button set_playing];
+        [self pause];
     }
     else
     {
-        printf("playing song");
-        self.playing = true;
-        [self.player play];
-        [self.play_button set_paused];
+        [self play];
     }
 }
 
 -(void)play
 {
+    printf("playing song");
     [self.player play];
     self.playing = true;
     [self.play_button set_paused];
 }
+
+-(void)pause
+{
+    printf("pausing song");
+    self.playing = false;
+    [self.player pause];
+    [self.play_button set_playing];}
 
 //------------------------------------------------------------------------------
 

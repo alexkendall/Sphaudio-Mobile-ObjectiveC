@@ -40,7 +40,6 @@
 @property EZOutput *output;
 @property MPMusicPlayerController *media_player;
 @property MPMediaItem *current_song;
-@property NSTimeInterval seek_time;
 @property bool first_song_loaded;
 @property EZAudioPlayer *player;
 @property EZAudioFile *audio_file;
