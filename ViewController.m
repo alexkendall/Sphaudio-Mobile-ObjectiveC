@@ -205,8 +205,6 @@
     [self.view addSubview:self.prev_button];
     [self.prev_button addTarget:self action:@selector(play_prev) forControlEvents:UIControlEventTouchUpInside];
     
-    self.song_indx = 0;
-    
     // setup ball color array
     UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:233.0 / 255.0 blue:1.0 alpha:1.0];
     UIColor *teal = [[UIColor alloc]initWithRed:0.0 green:159.0 / 255.0 blue:165.0 / 255.0 alpha:1.0];
@@ -221,10 +219,6 @@
     
     // set to not shinny by default
     self.shinny_mode = false;
-    
-    // confihgure audio player
-    self.media_player = [[MPMusicPlayerController alloc]init];
-    
     
     // load up all of systems music into queue, load first song into player
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];

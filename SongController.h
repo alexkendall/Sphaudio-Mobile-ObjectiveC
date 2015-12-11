@@ -20,7 +20,5 @@
 @property bool is_searching;
 @property int song_index;
 
-- (void)reset_state;
-
 @end
 

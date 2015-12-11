@@ -179,6 +179,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     printf("queried items: %lu", (unsigned long)self.queried_refs.count);
 }
 
+//------------------------------------------------------------------------------
 
 - (void)searchBar:(UISearchBar *)searchBar
     textDidChange:(NSString *)searchText
@@ -222,11 +223,15 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 
 #pragma mark - Utility
 
+//------------------------------------------------------------------------------
+
 - (void)reset_state
 {
     self.is_searching = false;
     self.search_bar.text = @"";
     [self.table_view reloadData];
 }
+
+//------------------------------------------------------------------------------
 
 @end
