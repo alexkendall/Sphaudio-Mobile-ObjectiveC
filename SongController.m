@@ -49,6 +49,9 @@
     self.table_view.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.table_view.backgroundColor = dark_gray;
     
+    // set song index to deslected or -1
+    self.song_index = -1;
+    
 }
 
 -(BOOL)prefersStatusBarHidden
@@ -65,6 +68,10 @@
 - (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    self.song_index = (int)indexPath.row;
+    [self.table_view reloadData];
+    
+    
     printf("Selected row %ld\n", (long)indexPath.row);
     
     // get song
@@ -94,7 +101,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     // play song
     player.audioFile = file;
     [vis_controller play];
-    vis_controller.playing = true;
+    
     
     // get rid of keyboard if up
     [self.search_bar resignFirstResponder];
@@ -130,7 +137,12 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     cell.textLabel.text = media_item.title;
     cell.textLabel.textColor = [UIColor whiteColor];
     
-    if((indexPath.row % 2) == 0)
+    if(self.song_index == indexPath.row)
+    {
+        cell.backgroundColor = [UIColor whiteColor];
+        cell.textLabel.textColor = [UIColor blackColor];
+    }
+    else if((indexPath.row % 2) == 0)
     {
         cell.backgroundColor = dark_gray;
     }

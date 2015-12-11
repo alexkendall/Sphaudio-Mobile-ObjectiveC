@@ -31,7 +31,6 @@
 @property NSTimer *update_timer;
 @property NSMutableArray *amp_points;
 @property SongController *song_controller;
-@property bool queue_is_up;
 @property int song_indx;
 @property NSTimer *animate_timer;
 @property UITabBar *tab_bar;

@@ -104,8 +104,6 @@
             sphere_geometry.materials = materials;
             
             // shininess
-            
-            
             CGFloat x = origin_x + (c * step);
             CGFloat y = r * step;
             sphere_node.position = SCNVector3Make(x, 0.5, y);
@@ -196,6 +194,7 @@
     CGFloat next_offset_y = self.view.frame.size.height * 0.705;
     self.next_button.frame = CGRectMake(next_offset_x, next_offset_y, next_dim, next_dim);
     [self.view addSubview:self.next_button];
+    [self.next_button addTarget:self action:@selector(play_next) forControlEvents:UIControlEventTouchUpInside];
     
     // configure previous button
     self.prev_button = [[PrevButton alloc]init];
@@ -204,11 +203,8 @@
     CGFloat prev_offset_y = self.view.frame.size.height * 0.705;
     self.prev_button.frame = CGRectMake(prev_offset_x, prev_offset_y, prev_dim, prev_dim);
     [self.view addSubview:self.prev_button];
+    [self.prev_button addTarget:self action:@selector(play_prev) forControlEvents:UIControlEventTouchUpInside];
     
-    
-    // set queue is up to false
-    self.song_controller = [[SongController alloc]init];
-    self.queue_is_up = false;
     self.song_indx = 0;
     
     // setup ball color array
@@ -268,20 +264,99 @@
     }
 }
 
+//------------------------------------------------------------------------------
+
+-(void)play_next
+{
+    printf("playing next");
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    SongController *song_controller = app_delegate.songs_controller;
+    
+    long num_songs = song_controller.songs_array.count;
+    
+   
+    if(num_songs > 0)
+    {
+        if(song_controller.song_index < (num_songs - 1))
+        {
+            ++song_controller.song_index;
+            
+        }
+        else if (song_controller.song_index >= (num_songs - 1))
+        {
+            song_controller.song_index = 0;
+        }
+        
+        MPMediaItem *selected_song = song_controller.songs_array[song_controller.song_index];
+        NSURL *song_url = [selected_song valueForKey:MPMediaItemPropertyAssetURL];
+        self.audio_file = [[EZAudioFile alloc]initWithURL:song_url];
+        [self setSongTitle:selected_song.title withArtist:selected_song.artist];
+        
+        
+        // play song
+        self.player.audioFile = self.audio_file;
+        [self play];
+    }
+
+    
+    
+}
+
+//------------------------------------------------------------------------------
+
+-(void)play_prev
+{
+    printf("playing previous\n");
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    SongController *song_controller = app_delegate.songs_controller;
+    
+    long num_songs = song_controller.songs_array.count;
+    
+    if(num_songs > 0)
+    {
+        if(song_controller.song_index <= 0)
+        {
+            song_controller.song_index = (int)num_songs - 1;
+            
+        }
+        else
+        {
+            --song_controller.song_index;
+        }
+        
+        MPMediaItem *selected_song = song_controller.songs_array[song_controller.song_index];
+        NSURL *song_url = [selected_song valueForKey:MPMediaItemPropertyAssetURL];
+        self.audio_file = [[EZAudioFile alloc]initWithURL:song_url];
+        [self setSongTitle:selected_song.title withArtist:selected_song.artist];
+        
+        
+        // play song
+        self.player.audioFile = self.audio_file;
+        [self play];
+    }
+}
+
+//------------------------------------------------------------------------------
+
+
 -(void)play
 {
-    printf("playing song");
+    printf("playing song\n");
     self.playing = true;
     [self.player play];
     [self.play_button set_paused];
 }
 
+//------------------------------------------------------------------------------
+
 -(void)pause
 {
-    printf("pausing song");
+    printf("pausing song\n");
     self.playing = false;
     [self.player pause];
-    [self.play_button set_playing];}
+    [self.player pause];
+    [self.play_button set_playing];
+}
 
 //------------------------------------------------------------------------------
 
@@ -381,7 +456,7 @@
         }
         float avg_amplitude = amp_sum / span;
         
-        float mult = 100;
+        float mult = 80;
         float y = avg_amplitude * mult;
         if(y < 0.5)
         {
@@ -401,11 +476,11 @@
         }
         else if(y < 6.0)
         {
-            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[0];
+            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[2];
         }
         else if(y < 8.0)
         {
-            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[0];
+            sphere.geometry.materials[0].diffuse.contents = self.ball_colors[3];
         }
         else if(y < 9.0)
         {
