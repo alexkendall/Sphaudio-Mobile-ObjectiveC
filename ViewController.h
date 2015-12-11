@@ -16,6 +16,7 @@
 #import "NavBar.h"
 #import "SongController.h"
 #import "Interpolate.h"
+@import SceneKit;
 @interface ViewController : UIViewController
 
 @property UIView* super_view;
@@ -31,7 +32,9 @@
 @property MPMediaItem *current_song;
 @property EZAudioPlayer *player;
 @property EZAudioFile *audio_file;
-
+@property int NUM_SPHERES;
+@property SCNNode *camera_node;
+@property SCNScene *scene;
 #define kAudioFileDefault [[NSBundle mainBundle] pathForResource:@"motion" ofType:@"mp3"]
 
 //------------------------------------------------------------------------------
@@ -40,6 +43,8 @@
 -(void)set_shinny;
 -(void)toggle_play;
 -(void)play;
+-(void)pause;
 -(void) setSongTitle:(NSString*)title withArtist:(NSString *)artist;
+-(void)load_spheres;
 
 @end

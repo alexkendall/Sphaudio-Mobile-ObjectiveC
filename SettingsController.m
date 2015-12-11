@@ -161,10 +161,52 @@
     self.shininess_label.textColor = [UIColor whiteColor];
     self.shinny_switch = [[CheckButton alloc]initWithFrame:CGRectMake(settings_margin, shininess_y + 20.0 + margin, dim, dim)];
     [self.shinny_switch addTarget:self action:@selector(toggle_shinny_mode_with_sender:) forControlEvents:UIControlEventTouchUpInside];
-    
-
     [self.view addSubview:self.shininess_label];
     [self.view addSubview:self.shinny_switch];
+    
+    // 5x5 label
+    CGFloat five_y = self.shininess_label.frame.origin.y +  self.shininess_label.frame.size.height + seperator_height;
+    self.five_label = [[UILabel alloc]initWithFrame:CGRectMake(settings_margin, five_y, self.view.bounds.size.width, 20.0)];
+    [self.view addSubview:self.five_label];
+    self.five_label.text = @"5 x 5";
+    self.five_label.textColor = [UIColor whiteColor];
+    
+    // 5 X 5 switch
+    self.five_switch = [[CheckButton alloc]initWithFrame:CGRectMake(settings_margin, five_y + 20.0 + margin, dim, dim)];
+    [self.view addSubview:self.five_switch];
+    [self.five_switch addTarget:self action:@selector(set_5x5) forControlEvents:UIControlEventTouchUpInside];
+    
+    // 7x7 label
+    self.seven_label = [[UILabel alloc]initWithFrame:CGRectMake(settings_margin + 80.0, five_y, self.view.bounds.size.width, 20.0)];
+    self.seven_label.text = @"7 x 7";
+    self.seven_label.textColor = [UIColor whiteColor];
+    [self.view addSubview:self.seven_label];
+    
+    // 7 X 7 switch
+    self.seven_switch = [[CheckButton alloc]initWithFrame:CGRectMake(self.seven_label.frame.origin.x, self.five_switch.frame.origin.y, dim, dim)];
+    [self.view addSubview:self.seven_switch];
+    [self.seven_switch addTarget:self action:@selector(set_7x7) forControlEvents:UIControlEventTouchUpInside];
+}
+
+-(void)set_7x7
+{
+    [self.seven_switch set_checked];
+    [self.five_switch set_not_checked];
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    ViewController *vis_controller = app_delegate.vis_controller;
+    vis_controller.NUM_SPHERES = 49;
+    [vis_controller load_spheres];
+}
+
+-(void)set_5x5
+{
+    [self.five_switch set_checked];
+    [self.seven_switch set_not_checked];
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    ViewController *vis_controller = app_delegate.vis_controller;
+    vis_controller.NUM_SPHERES = 25;
+    [vis_controller load_spheres];
+    
 }
 
 -(void)toggle_shinny_mode_with_sender:(CheckButton*)sender

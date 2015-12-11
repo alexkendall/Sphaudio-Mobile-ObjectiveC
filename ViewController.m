@@ -40,13 +40,13 @@
     [self.view addSubview:scene_view];
     
     // scene
-    SCNScene *scene = [[SCNScene alloc]init];
-    scene_view.scene = scene;
+    self.scene = [[SCNScene alloc]init];
+    scene_view.scene = self.scene;
     
     // camera
     SCNCamera *camera = [[SCNCamera alloc]init];
-    SCNNode *camera_node = [[SCNNode alloc]init];
-    camera_node.camera = camera;
+    self.camera_node = [[SCNNode alloc]init];
+    self.camera_node.camera = camera;
     
     // spot light
     SCNLight *spot_light = [[SCNLight alloc]init];
@@ -74,13 +74,13 @@
     SCNLight *ambient_light = [[SCNLight alloc]init];
     ambient_light.type = SCNLightTypeAmbient;
     ambient_light.color = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1.0];
-    camera_node.light = ambient_light;
+    self.camera_node.light = ambient_light;
     
     // configure spheres
     CGFloat step = 3.0;
-    CGFloat origin_x = -6.0;
-    int num_rows = 5;
-    int num_cols = 5;
+    CGFloat origin_x = -9.0;
+    int num_rows = 7;
+    int num_cols = 7;
     self.spheres = [[NSMutableArray alloc]init];
     
     for(int r = 0; r < num_rows; ++r)
@@ -107,7 +107,7 @@
             CGFloat x = origin_x + (c * step);
             CGFloat y = r * step;
             sphere_node.position = SCNVector3Make(x, 0.5, y);
-            [scene.rootNode addChildNode:sphere_node];
+            [self.scene.rootNode addChildNode:sphere_node];
             [self.spheres addObject:sphere_node];
             
         }
@@ -131,21 +131,21 @@
     
     NSArray *materials = @[floor_material];
     floor_geometry.materials = materials;
-    [scene.rootNode addChildNode:floor_node];
-    [scene.rootNode addChildNode:spot_node];
-    [scene.rootNode addChildNode:camera_node];
-    [scene.rootNode addChildNode:point_node];
+    [self.scene.rootNode addChildNode:floor_node];
+    [self.scene.rootNode addChildNode:spot_node];
+    [self.scene.rootNode addChildNode:self.camera_node];
+    [self.scene.rootNode addChildNode:point_node];
     
     SCNNode *center_node = [[SCNNode alloc]init];
     center_node.position = SCNVector3Make(0.0, 0.0, 6.0);
-    [scene.rootNode addChildNode:center_node];
+    [self.scene.rootNode addChildNode:center_node];
     
     // configure camera position and eye
-    camera_node.position = SCNVector3Make(0.0, 12.0, 40.0);
+    self.camera_node.position = SCNVector3Make(0.0, 15.0, 50.0);
     SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:center_node];
     constraint.gimbalLockEnabled = true;
     NSArray *constraints = @[constraint];
-    camera_node.constraints = constraints;
+    self.camera_node.constraints = constraints;
     spot_node.constraints = constraints;
     
     // configure song title label
@@ -194,7 +194,7 @@
     CGFloat next_offset_y = self.view.frame.size.height * 0.705;
     self.next_button.frame = CGRectMake(next_offset_x, next_offset_y, next_dim, next_dim);
     [self.view addSubview:self.next_button];
-    [self.next_button addTarget:self action:@selector(play_next) forControlEvents:UIControlEventTouchUpInside];
+    [self.next_button addTarget:self action:@selector(skip_next) forControlEvents:UIControlEventTouchUpInside];
     
     // configure previous button
     self.prev_button = [[PrevButton alloc]init];
@@ -203,7 +203,7 @@
     CGFloat prev_offset_y = self.view.frame.size.height * 0.705;
     self.prev_button.frame = CGRectMake(prev_offset_x, prev_offset_y, prev_dim, prev_dim);
     [self.view addSubview:self.prev_button];
-    [self.prev_button addTarget:self action:@selector(play_prev) forControlEvents:UIControlEventTouchUpInside];
+    [self.prev_button addTarget:self action:@selector(skip_prev) forControlEvents:UIControlEventTouchUpInside];
     
     // setup ball color array
     UIColor *light_blue = [[UIColor alloc]initWithRed:0.0 green:233.0 / 255.0 blue:1.0 alpha:1.0];
@@ -260,7 +260,7 @@
 
 //------------------------------------------------------------------------------
 
--(void)play_next
+-(void)skip_next
 {
     printf("playing next");
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
@@ -289,7 +289,7 @@
         
         // play song
         self.player.audioFile = self.audio_file;
-        [self play];
+        [self pause];
     }
 
     
@@ -298,7 +298,7 @@
 
 //------------------------------------------------------------------------------
 
--(void)play_prev
+-(void)skip_prev
 {
     printf("playing previous\n");
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
@@ -326,7 +326,8 @@
         
         // play song
         self.player.audioFile = self.audio_file;
-        [self play];
+
+        [self pause];
     }
 }
 
@@ -347,7 +348,6 @@
 {
     printf("pausing song\n");
     self.playing = false;
-    [self.player pause];
     [self.player pause];
     [self.play_button set_playing];
 }
@@ -385,7 +385,7 @@
  */
 - (void)animate
 {
-    int NUM_SPHERES = 25;
+    int NUM_SPHERES = 49;
     for(int i = 0; i < NUM_SPHERES; ++i)
     {
         SPHNode *sphere = self.spheres[i];
@@ -426,13 +426,11 @@
  withNumberOfChannels:(UInt32)numberOfChannels
           inAudioFile:(EZAudioFile *)audioFile
 {
-    
     dispatch_async(dispatch_get_main_queue(), ^{
     });
     
-    
     float *_buffer = buffer[0]; // sample one channel
-    int num_spheres = 25;
+    int num_spheres = 49;
     int span = bufferSize / num_spheres;
     int start_index = 0;
     int end_index = 0;
@@ -476,7 +474,7 @@
         {
             sphere.geometry.materials[0].diffuse.contents = self.ball_colors[3];
         }
-        else if(y < 9.0)
+        else if(y < 10.0)
         {
             sphere.geometry.materials[0].diffuse.contents = self.ball_colors[4];
         }
@@ -485,6 +483,49 @@
             sphere.geometry.materials[0].diffuse.contents = self.ball_colors[5];
         }
     }
+    
+}
+
+-(void)load_spheres
+{
+    int num_rows = sqrt(self.NUM_SPHERES);
+    int num_cols = num_rows;
+    
+    // configure spheres
+    CGFloat step = 3.0;
+    CGFloat origin_x = -6.0;
+    self.camera_node.position = SCNVector3Make(0.0, 12.0, 40.0);
+    
+    if(self.NUM_SPHERES == 25)
+    {
+        // keep spheres 0-23 in view
+        // move spheres 24-48 out of view
+        for(int i = 24; i < 49; ++i)
+        {
+            SCNNode *sphere_node = self.spheres[i];
+            sphere_node.position = SCNVector3Make(100.0, 0.0, 0.0);
+        }
+    }
+    else
+    {
+        origin_x = -9.0;
+         self.camera_node.position = SCNVector3Make(0.0, 15.0, 50.0);
+    }
+    
+    for(int r = 0; r < num_rows; ++r)
+    {
+        for(int c = 0; c < num_cols; ++c)
+        {
+            int sphere_index = (r * num_cols) + c;
+            SCNNode *sphere_node = self.spheres[sphere_index];
+            CGFloat x = origin_x + (c * step);
+            CGFloat y = r * step;
+            sphere_node.position = SCNVector3Make(x, 0.5, y);
+        }
+    }
+    
+
+    
     
 }
 
@@ -501,5 +542,16 @@
 }
 
 //------------------------------------------------------------------------------
+
+/**
+ Triggered by EZAudioPlayer's internal EZAudioFile's EZAudioFileDelegate callback and notifies the delegate that the end of the file has been reached.
+ @param audioPlayer The instance of the EZAudioPlayer that triggered the event
+ @param audioFile   The instance of the EZAudioFile that the event was triggered from
+ */
+- (void)audioPlayer:(EZAudioPlayer *)audioPlayer
+reachedEndOfAudioFile:(EZAudioFile *)audioFile;
+{
+    [self skip_next];
+}
 
 @end

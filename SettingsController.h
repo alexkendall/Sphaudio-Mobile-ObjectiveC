@@ -25,7 +25,11 @@
 @property CheckButton* warm_selection_but;
 @property CheckButton* def_selection_but;
 @property CheckButton *shinny_switch;
+@property CheckButton *five_switch;
+@property CheckButton *seven_switch;
 @property UILabel* shininess_label;
+@property UILabel* seven_label;
+@property UILabel* five_label;
 @end
 
  

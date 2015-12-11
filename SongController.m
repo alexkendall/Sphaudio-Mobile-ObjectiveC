@@ -17,7 +17,6 @@
 
 @implementation SongController
 
-
 -(void)viewDidLoad{
     [super viewDidLoad];
     
@@ -54,12 +53,14 @@
     
 }
 
+//------------------------------------------------------------------------------
+
 -(BOOL)prefersStatusBarHidden
 {
     return YES;
 }
 
-
+//------------------------------------------------------------------------------
 
 #pragma mark - UITableViewDelegate
 
@@ -100,8 +101,15 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     
     // play song
     player.audioFile = file;
-    [vis_controller play];
     
+    if(vis_controller.playing)
+    {
+        [vis_controller pause];
+    }
+    else
+    {
+        [vis_controller play];
+    }
     
     // get rid of keyboard if up
     [self.search_bar resignFirstResponder];
@@ -134,6 +142,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
         media_item = self.songs_array[indexPath.row];
     }
     
+    cell.textLabel.font = [UIFont systemFontOfSize:14.0];
     cell.textLabel.text = media_item.title;
     cell.textLabel.textColor = [UIColor whiteColor];
     
