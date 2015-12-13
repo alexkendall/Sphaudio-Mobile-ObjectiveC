@@ -31,6 +31,8 @@
 @property UILabel* shininess_label;
 @property UILabel* seven_label;
 @property UILabel* five_label;
+-(void)set_7x7;
+-(void)set_5x5;
 @end
 
  

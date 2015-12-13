@@ -186,6 +186,9 @@
     self.seven_switch = [[CheckButton alloc]initWithFrame:CGRectMake(self.seven_label.frame.origin.x, self.five_switch.frame.origin.y, dim, dim)];
     [self.view addSubview:self.seven_switch];
     [self.seven_switch addTarget:self action:@selector(set_7x7) forControlEvents:UIControlEventTouchUpInside];
+    
+    // default
+    [self set_7x7];
 }
 
 -(void)set_7x7
@@ -197,7 +200,8 @@
     vis_controller.NUM_SPHERES = 49;
     [vis_controller load_spheres];
     
-    save_context();
+    // store persistently
+    //store_num_spheres(49);
 }
 
 -(void)set_5x5
@@ -209,7 +213,8 @@
     vis_controller.NUM_SPHERES = 25;
     [vis_controller load_spheres];
     
-     save_context();
+    // store persistently
+    //store_num_spheres(25);
     
 }
 
@@ -230,43 +235,41 @@
         ViewController *vis_controller = app_delegate.vis_controller;
         [vis_controller set_shinny];
     }
-     save_context();
 }
 
 -(void) update_theme_with_sender:(UIButton*)sender
 {
     printf("Theme selected for button number %ld\n", (long)sender.tag);
     
+    [self set_theme:(int)sender.tag];
+}
+
+-(void) set_theme:(int)num
+{
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
     ViewController *visualizer_controller = app_delegate.vis_controller;
-    
-    if(sender.tag == 0)
+    if(num == 0)
     {
         [self.def_selection_but set_checked];
         [self.warm_selection_but set_not_checked];
         [self.cool_selection_but set_not_checked];
         visualizer_controller.ball_colors = self.default_colors;
     }
-    if(sender.tag == 1)
+    if(num == 1)
     {
         [self.def_selection_but set_not_checked];
         [self.warm_selection_but set_checked];
         [self.cool_selection_but set_not_checked];
         visualizer_controller.ball_colors = self.warm_colors;
     }
-    if(sender.tag == 2)
+    if(num == 2)
     {
         [self.def_selection_but set_not_checked];
         [self.warm_selection_but set_not_checked];
         [self.cool_selection_but set_checked];
         visualizer_controller.ball_colors = self.cool_colors;
     }
-    save_context();
+
 }
 
 @end
-
-
-
-
-

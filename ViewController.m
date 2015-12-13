@@ -31,7 +31,8 @@
     self.super_view = self.view;
     self.super_view.backgroundColor = [UIColor blackColor];
     
-    UIColor *dark_gray = [[UIColor alloc]initWithRed:0.12 green:0.12 blue:0.12 alpha:1.0];
+    
+    UIColor *dark_gray = [[UIColor alloc]initWithRed:0.125 green:0.125 blue:0.125 alpha:1.0];
     
     // configure scene view
     SCNView *scene_view = [[SCNView alloc]initWithFrame:self.view.bounds];
@@ -112,6 +113,9 @@
             
         }
     }
+    
+    
+    
     
     // generate floor
     SCNPlane *floor_geometry = [[SCNPlane alloc]init];
@@ -236,6 +240,31 @@
         self.playing = false;
         [self.play_button set_playing];
     }
+    
+    
+    
+    // configure according to save settings information
+    /*
+    SettingsController *settings_controller = app_delegate.settings_controller;
+    
+    // configure number of spheres
+    self.NUM_SPHERES = get_num_spheres();
+    [self load_spheres];
+    if(self.NUM_SPHERES == 49)
+    {
+        [settings_controller set_7x7];
+    }
+    else if(self.NUM_SPHERES == 25)
+    {
+        [settings_controller set_5x5];
+    }
+    else
+    {
+        printf("Error: number of spheres is %i", self.NUM_SPHERES);
+        self.NUM_SPHERES = 49;
+    }
+    */
+    
 }
 
 - (void)didReceiveMemoryWarning {
