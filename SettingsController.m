@@ -196,6 +196,8 @@
     ViewController *vis_controller = app_delegate.vis_controller;
     vis_controller.NUM_SPHERES = 49;
     [vis_controller load_spheres];
+    
+    save_context();
 }
 
 -(void)set_5x5
@@ -206,6 +208,8 @@
     ViewController *vis_controller = app_delegate.vis_controller;
     vis_controller.NUM_SPHERES = 25;
     [vis_controller load_spheres];
+    
+     save_context();
     
 }
 
@@ -226,7 +230,7 @@
         ViewController *vis_controller = app_delegate.vis_controller;
         [vis_controller set_shinny];
     }
-    
+     save_context();
 }
 
 -(void) update_theme_with_sender:(UIButton*)sender
@@ -257,6 +261,7 @@
         [self.cool_selection_but set_checked];
         visualizer_controller.ball_colors = self.cool_colors;
     }
+    save_context();
 }
 
 @end
