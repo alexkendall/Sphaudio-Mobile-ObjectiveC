@@ -6,7 +6,6 @@
 //  Copyright © 2015 Alex Harrison. All rights reserved.
 //
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import <UIKit/UIKit.h>
 #import "Core.h"
 #include "AppDelegate.h"
@@ -50,6 +49,12 @@ NSManagedObject* fetch_settings()
     else
     {
         settings_data = results[0];
+        // sanity check
+        int num_spheres = (int)[settings_data valueForKey:@"num_spheres"];
+        if(num_spheres > 49)
+        {
+            [settings_data setValue:[NSNumber numberWithInt:49] forKey:@"num_spheres"];
+        }
     }
     return settings_data;
 }
@@ -124,4 +129,5 @@ bool get_shinny_mode()
     return is_shinny;
 }
 
+//-----------------------------------------------------------------------------------------
 
