@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "CheckButton.h"
+#import "Core.h"
 @interface SettingsController : UIViewController
 
 @property UILabel *settings_label;
@@ -25,7 +26,18 @@
 @property CheckButton* warm_selection_but;
 @property CheckButton* def_selection_but;
 @property CheckButton *shinny_switch;
+@property CheckButton *five_switch;
+@property CheckButton *seven_switch;
 @property UILabel* shininess_label;
+@property UILabel* seven_label;
+@property UILabel* five_label;
+-(void)set_7x7;
+-(void)set_5x5;
+-(void) set_theme:(int)num;
+@property NSString* theme;
+@property int num_spheres;
+@property NSString* shinny_mode;
+
 @end
 
  

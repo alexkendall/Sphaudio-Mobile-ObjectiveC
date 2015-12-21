@@ -13,6 +13,8 @@
 
 @implementation SettingsController
 
+//------------------------------------------------------------------------------
+
 -(void)viewDidLoad
 {
     [super viewDidLoad];
@@ -31,11 +33,7 @@
     UIColor *red_orange = [[UIColor alloc]initWithRed:1.0 green:107.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
     UIColor *bright_red = [[UIColor alloc]initWithRed:1.0 green:23.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
     UIColor *dark_red = [[UIColor alloc]initWithRed:0.5 green:0.0 blue:0.0 alpha:1.0];
-
-    
     self.default_colors = @[light_blue, teal, soft_green, yellow_orange, red_orange, bright_red, dark_red];
-    
-    UIColor *white = [UIColor whiteColor];
 
     // warm
     UIColor *yellow = [UIColor yellowColor];
@@ -44,8 +42,6 @@
     UIColor *soft_orange= [[UIColor alloc]initWithRed:1.0 green:68.0 / 255.0 blue:0.0 / 255.0 alpha:1.0];
     UIColor *soft_red = [[UIColor alloc]initWithRed:1.0 green:26.0 / 255.0 blue:0.0 alpha:1.0];
     UIColor *burnt_red = [[UIColor alloc]initWithRed:178.0 / 255.0 green:0.0 blue:0.0 alpha:1.0];
-    UIColor *dark_maroon = [[UIColor alloc]initWithRed:109.0 / 255.0 green:0.0 blue:0.0 alpha:1.0];
-    
     self.warm_colors = @[yellow, soft_yellow, burnt_yellow, soft_orange, soft_red, burnt_red, dark_red];
     
     // cool
@@ -54,11 +50,9 @@
     UIColor *soft_blue_ = [[UIColor alloc]initWithRed:0.0 green:104.0 / 255.0 blue:255.0 / 255.0 alpha:1.0];
     UIColor *soft_green_ = [[UIColor alloc]initWithRed:0.0 green:167.0 / 255.0 blue:123.0 alpha:1.0];
     UIColor *light_green_ = [[UIColor alloc]initWithRed:0.0 / 255.0 green:167.0 / 255.0 blue:66.0 / 255.0 alpha:1.0];
-    UIColor *forest_green_ = [[UIColor alloc]initWithRed:0.0 / 255.0 green:167.0 / 255.0 blue:66.0 / 255.0 alpha:1.0];
+    UIColor *forest_green_ = [[UIColor alloc]initWithRed:0.0 / 255.0 green:100.0 / 255.0 blue:66.0 / 255.0 alpha:1.0];
     UIColor *dark_green_ = [[UIColor alloc]initWithRed:0.0 / 255.0 green:64.0 / 255.0 blue:25.0 / 255.0 alpha:1.0];
     self.cool_colors = @[icy_blue_, light_blue_, soft_blue_, soft_green_, light_green_, forest_green_, dark_green_];
-    
-
     
     // settings theme
     CGFloat settings_margin = self.view.bounds.size.width * 0.05;
@@ -161,11 +155,104 @@
     self.shininess_label.textColor = [UIColor whiteColor];
     self.shinny_switch = [[CheckButton alloc]initWithFrame:CGRectMake(settings_margin, shininess_y + 20.0 + margin, dim, dim)];
     [self.shinny_switch addTarget:self action:@selector(toggle_shinny_mode_with_sender:) forControlEvents:UIControlEventTouchUpInside];
-    
-
     [self.view addSubview:self.shininess_label];
     [self.view addSubview:self.shinny_switch];
+    
+    // 5x5 label
+    CGFloat five_y = self.shininess_label.frame.origin.y +  self.shininess_label.frame.size.height + seperator_height;
+    self.five_label = [[UILabel alloc]initWithFrame:CGRectMake(settings_margin, five_y, self.view.bounds.size.width, 20.0)];
+    [self.view addSubview:self.five_label];
+    self.five_label.text = @"5 x 5";
+    self.five_label.textColor = [UIColor whiteColor];
+    
+    // 5 X 5 switch
+    self.five_switch = [[CheckButton alloc]initWithFrame:CGRectMake(settings_margin, five_y + 20.0 + margin, dim, dim)];
+    [self.view addSubview:self.five_switch];
+    [self.five_switch addTarget:self action:@selector(set_5x5) forControlEvents:UIControlEventTouchUpInside];
+    
+    // 7x7 label
+    self.seven_label = [[UILabel alloc]initWithFrame:CGRectMake(settings_margin + 80.0, five_y, self.view.bounds.size.width, 20.0)];
+    self.seven_label.text = @"7 x 7";
+    self.seven_label.textColor = [UIColor whiteColor];
+    [self.view addSubview:self.seven_label];
+    
+    // 7 X 7 switch
+    self.seven_switch = [[CheckButton alloc]initWithFrame:CGRectMake(self.seven_label.frame.origin.x, self.five_switch.frame.origin.y, dim, dim)];
+    [self.view addSubview:self.seven_switch];
+    [self.seven_switch addTarget:self action:@selector(set_7x7) forControlEvents:UIControlEventTouchUpInside];
+    
+    
+    // fetch settings from storage
+    self.num_spheres = get_num_spheres();
+    self.theme = get_theme();
+    self.shinny_mode = get_shinny_mode();
+    
+    // set visualizer sphere number
+    if(self.num_spheres == 25)
+    {
+        [self set_5x5];
+    }
+    else
+    {
+        [self set_7x7];
+    }
+    
+
+    // set theme
+    if([self.theme  isEqual: @"deafult"])
+    {
+        [self set_theme:0];
+    }
+    else if([self.theme  isEqual: @"warm"])
+    {
+        [self set_theme:1];
+    }
+    else if([self.theme isEqual:@"cool"])
+    {
+        [self set_theme:2];
+    }
+    
+    // set shinny mode
+    if([self.shinny_mode isEqual:@"shinny"])
+    {
+        [self toggle_shinny_mode_with_sender:self.shinny_switch];
+    }
+    
+    save_context();
 }
+
+//------------------------------------------------------------------------------
+
+-(void)set_7x7
+{
+    [self.seven_switch set_checked];
+    [self.five_switch set_not_checked];
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    ViewController *vis_controller = app_delegate.vis_controller;
+    vis_controller.NUM_SPHERES = 49;
+    [vis_controller load_spheres];
+    
+    // store persistently
+    store_settings(@"49", self.theme, self.shinny_mode);
+}
+
+//------------------------------------------------------------------------------
+
+-(void)set_5x5
+{
+    [self.five_switch set_checked];
+    [self.seven_switch set_not_checked];
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    ViewController *vis_controller = app_delegate.vis_controller;
+    vis_controller.NUM_SPHERES = 25;
+    [vis_controller load_spheres];
+    
+    // store persistently
+    store_settings(@"25", self.theme, self.shinny_mode);
+    
+}
+
+//------------------------------------------------------------------------------
 
 -(void)toggle_shinny_mode_with_sender:(CheckButton*)sender
 {
@@ -176,6 +263,10 @@
         AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
         ViewController *vis_controller = app_delegate.vis_controller;
         [vis_controller set_matte];
+       
+        self.shinny_mode = @"not_shinny";
+        NSString *num_str = [NSString stringWithFormat:@"%i", self.num_spheres];
+        store_settings(num_str, self.theme, self.shinny_mode);
     }
     else
     {
@@ -183,43 +274,89 @@
         AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
         ViewController *vis_controller = app_delegate.vis_controller;
         [vis_controller set_shinny];
+        self.shinny_mode = @"shinny";
+        
+        NSString *num_str = [NSString stringWithFormat:@"%i", self.num_spheres];
+        store_settings(num_str, self.theme, self.shinny_mode);
     }
     
+    
 }
+
+//------------------------------------------------------------------------------
 
 -(void) update_theme_with_sender:(UIButton*)sender
 {
     printf("Theme selected for button number %ld\n", (long)sender.tag);
     
+    [self set_theme:(int)sender.tag];
+}
+
+//------------------------------------------------------------------------------
+
+-(void) set_theme:(int)num
+{
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
     ViewController *visualizer_controller = app_delegate.vis_controller;
     
-    if(sender.tag == 0)
+    NSString *num_spheres = [NSString stringWithFormat:@"%i", self.num_spheres];
+    
+    if(num == 0)
     {
         [self.def_selection_but set_checked];
         [self.warm_selection_but set_not_checked];
         [self.cool_selection_but set_not_checked];
         visualizer_controller.ball_colors = self.default_colors;
+        
+        store_settings(num_spheres, @"deafult", self.shinny_mode);
+        self.theme = @"default";
+        
+        NSArray *_spheres = visualizer_controller.spheres;
+        for(int i = 0; i < _spheres.count; ++i)
+        {
+            SCNNode *sphere = _spheres[i];
+            sphere.geometry.materials[0].diffuse.contents = self.default_colors[0];
+        }
     }
-    if(sender.tag == 1)
+    if(num == 1)
     {
         [self.def_selection_but set_not_checked];
         [self.warm_selection_but set_checked];
         [self.cool_selection_but set_not_checked];
         visualizer_controller.ball_colors = self.warm_colors;
+        
+        store_settings(num_spheres, @"warm", self.shinny_mode);
+        self.theme = @"warm";
+        
+        NSArray *_spheres = visualizer_controller.spheres;
+        for(int i = 0; i < _spheres.count; ++i)
+        {
+            SCNNode *sphere = _spheres[i];
+            sphere.geometry.materials[0].diffuse.contents = self.warm_colors[0];
+        }
+        
     }
-    if(sender.tag == 2)
+    if(num == 2)
     {
         [self.def_selection_but set_not_checked];
         [self.warm_selection_but set_not_checked];
         [self.cool_selection_but set_checked];
         visualizer_controller.ball_colors = self.cool_colors;
+        
+        store_settings(num_spheres, @"cool", self.shinny_mode);
+        self.theme = @"cool";
+        
+        NSArray *_spheres = visualizer_controller.spheres;
+        for(int i = 0; i < _spheres.count; ++i)
+        {
+            SCNNode *sphere = _spheres[i];
+            sphere.geometry.materials[0].diffuse.contents = self.cool_colors[0];
+        }
     }
+    NSString *theme = [fetch_settings() valueForKey:@"theme"];
+    printf("\nTheme updated to theme %s\n", theme.UTF8String);
 }
 
+//------------------------------------------------------------------------------
+
 @end
-
-
-
-
-

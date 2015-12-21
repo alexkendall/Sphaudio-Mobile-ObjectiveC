@@ -17,12 +17,12 @@
 
 @implementation SongController
 
-
 -(void)viewDidLoad{
     [super viewDidLoad];
     
     CGFloat nav_offset = self.view.frame.size.width * 0.175;
-    CGFloat height = self.view.frame.size.height - nav_offset;
+    CGFloat height = self.view.frame.size.height;
+    CGFloat tab_height = 49;
     self.view.frame = CGRectMake(0.0, nav_offset, self.view.frame.size.width, height);
     self.view.backgroundColor = [[UIColor alloc]initWithRed:0.12 green:0.12 blue:0.12 alpha:1.0];
     
@@ -41,7 +41,7 @@
     
     // configure table view
     UIColor *dark_gray = [[UIColor alloc]initWithRed:0.2 green:0.2 blue:0.2 alpha:1.0];
-    CGFloat table_height = self.view.frame.size.height;
+    CGFloat table_height = self.view.bounds.size.height - search_height - tab_height;
     self.table_view = [[UITableView alloc]initWithFrame:CGRectMake(0.0, search_height, self.view.frame.size.width, table_height) style:UITableViewStylePlain];
     self.table_view.delegate = self;
     self.table_view.dataSource = self;
@@ -49,14 +49,19 @@
     self.table_view.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.table_view.backgroundColor = dark_gray;
     
+    // set song index to deslected or -1
+    self.song_index = -1;
+    
 }
+
+//------------------------------------------------------------------------------
 
 -(BOOL)prefersStatusBarHidden
 {
     return YES;
 }
 
-
+//------------------------------------------------------------------------------
 
 #pragma mark - UITableViewDelegate
 
@@ -65,30 +70,49 @@
 - (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    self.song_index = (int)indexPath.row;
+    [self.table_view reloadData];
+    
+    
     printf("Selected row %ld\n", (long)indexPath.row);
     
     // get song
-    MPMediaItem *selected_song = self.songs_array[indexPath.row];
+     MPMediaItem *selected_song;
+    if(self.is_searching)
+    {
+        selected_song = self.queried_refs[indexPath.row];
+    }
+    else
+    {
+        selected_song = self.songs_array[indexPath.row];
+    }
     
-    // get visualizer controller instance
+    // get url
+    NSURL *song_url = [selected_song valueForKey:MPMediaItemPropertyAssetURL];
+    
+    // get visualizer controller instance and set playback of its player
     AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
     ViewController *vis_controller = app_delegate.vis_controller;
+    
+    // get media player
     EZAudioPlayer *player = vis_controller.player;
     
-    [player openMediaItem:selected_song
-             completion:^(EZAudioFile *audioFile,
-                          NSError *error)
-    {
-        NSLog(@"audio file: %@, error: %@", audioFile, error);
-    }];
-    [player play];
+    EZAudioFile *file = vis_controller.audio_file;
+    file = [[EZAudioFile alloc]initWithURL:song_url];
     
+    // swap audio files
+    player.audioFile = file;
+    
+    // play new song
+    [vis_controller play];
     
     // get rid of keyboard if up
     [self.search_bar resignFirstResponder];
     
+    // update song title
+    [vis_controller setSongTitle:selected_song.title withArtist:selected_song.artist];
     
-    
+    app_delegate.tab_controller.selectedViewController = vis_controller;
 }
 
 //------------------------------------------------------------------------------
@@ -115,10 +139,16 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
         media_item = self.songs_array[indexPath.row];
     }
     
+    cell.textLabel.font = [UIFont systemFontOfSize:14.0];
     cell.textLabel.text = media_item.title;
     cell.textLabel.textColor = [UIColor whiteColor];
     
-    if((indexPath.row % 2) == 0)
+    if(self.song_index == indexPath.row)
+    {
+        cell.backgroundColor = [UIColor whiteColor];
+        cell.textLabel.textColor = [UIColor blackColor];
+    }
+    else if((indexPath.row % 2) == 0)
     {
         cell.backgroundColor = dark_gray;
     }
@@ -134,16 +164,16 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 - (NSInteger)tableView:(UITableView *)tableView
  numberOfRowsInSection:(NSInteger)section
 {
-    printf("%d songs loaded from system library\n", self.songs_array.count);
+    printf("%lu songs loaded from system library\n", (unsigned long)self.songs_array.count);
     
     if(self.is_searching)
     {
-        printf("Setting music queue size to %d [queried items]", self.queried_refs.count);
+        printf("Setting music queue size to %lu [queried items]", (unsigned long)self.queried_refs.count);
         return self.queried_refs.count;
     }
     else
     {
-        printf("Setting music queue size to %d [regular queue]", self.songs_array.count);
+        printf("Setting music queue size to %lu [regular queue]", (unsigned long)self.songs_array.count);
         return self.songs_array.count;
     }
 }
@@ -152,8 +182,18 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
 {
+    printf("queried items: %lu", (unsigned long)self.queried_refs.count);
+    [searchBar resignFirstResponder];
+}
+
+//------------------------------------------------------------------------------
+
+- (void)searchBar:(UISearchBar *)searchBar
+    textDidChange:(NSString *)searchText
+{
+    printf("text did change");
     // reset queried reference array
-     self.queried_refs = [[NSMutableArray alloc]init];
+    self.queried_refs = [[NSMutableArray alloc]init];
     
     // seaarch for songs with text specified -
     for(int i = 0; i < self.songs_array.count; ++i)
@@ -180,25 +220,17 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     {
         self.is_searching = false;
     }
-    
-    [self.search_bar resignFirstResponder];
-    [self.table_view reloadData];
-    printf("queried items: %d", self.queried_refs.count);
-}
-
-
-- (void)searchBar:(UISearchBar *)searchBar
-    textDidChange:(NSString *)searchText
-{
-    
     if([searchText length] == 0)
     {
         [self reset_state];
         [searchBar resignFirstResponder];
     }
+    [self.table_view reloadData];
 }
 
 #pragma mark - Utility
+
+//------------------------------------------------------------------------------
 
 - (void)reset_state
 {
@@ -206,5 +238,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
     self.search_bar.text = @"";
     [self.table_view reloadData];
 }
+
+//------------------------------------------------------------------------------
 
 @end
