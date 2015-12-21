@@ -11,6 +11,7 @@
 #include "SongController.h"
 #include "SettingsController.h"
 #include "ViewController.h"
+#include "TabBar.h"
 @import MediaPlayer;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
@@ -25,6 +26,7 @@
 @property ViewController* vis_controller;
 @property SettingsController* settings_controller;
 @property UITabBarController *tab_controller;
+@property SPHTabBarController *root_controller;
 
 @property int shinny_mode;
 @property int num_spheres;

@@ -9,7 +9,8 @@
 #import <UIKit/UIKit.h>
 #import "CheckButton.h"
 #import "Core.h"
-@interface SettingsController : UIViewController
+#import "BaseController.h"
+@interface SettingsController : BaseController
 
 @property UILabel *settings_label;
 @property UILabel *default_label;

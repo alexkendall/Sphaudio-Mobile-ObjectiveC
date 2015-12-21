@@ -10,8 +10,9 @@
 #import "EZAudioFile.h"
 #import "EZAudioPlayer.h"
 #import "EZAudio.h"
+#import "BaseController.h"
 
-@interface SongController : UIViewController
+@interface SongController : BaseController
 
 @property UISearchBar *search_bar;
 @property UITableView *table_view;

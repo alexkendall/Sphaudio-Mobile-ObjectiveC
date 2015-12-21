@@ -21,6 +21,8 @@
 #import "Icon.h"
 
 
+
+
 @implementation ViewController
 
 - (void)viewDidLoad {
@@ -268,6 +270,7 @@
     UIImageView *image_view = [[UIImageView alloc]initWithImage:image];
     [self.view addSubview:image_view];
      */
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -430,7 +433,7 @@
     CGFloat current_time = self.player.currentTime;
     CGFloat duration = self.player.duration;
     
-    printf("\n\nDuration: %f\nCurrent Time: %f\n", duration, current_time);
+    //printf("\n\nDuration: %f\nCurrent Time: %f\n", duration, current_time);
     //CGFloat t_val = current_time / duration;
     self.seek_slider.minimumValue = 0.0;
     self.seek_slider.maximumValue = duration;

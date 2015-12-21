@@ -15,8 +15,9 @@
 #import "PrevButton.h"
 #import "NavBar.h"
 #import "SongController.h"
+#import "BaseController.h"
 @import SceneKit;
-@interface ViewController : UIViewController
+@interface ViewController : BaseController
 
 @property UIView* super_view;
 @property PlayButton *play_button;

@@ -23,7 +23,7 @@
     CGFloat nav_offset = self.view.frame.size.width * 0.175;
     CGFloat height = self.view.frame.size.height;
     CGFloat tab_height = 49;
-    self.view.frame = CGRectMake(0.0, nav_offset, self.view.frame.size.width, height);
+    //self.view.frame = CGRectMake(0.0, nav_offset, self.view.frame.size.width, height);
     self.view.backgroundColor = [[UIColor alloc]initWithRed:0.12 green:0.12 blue:0.12 alpha:1.0];
     
     // configure search bar
@@ -41,7 +41,7 @@
     
     // configure table view
     UIColor *dark_gray = [[UIColor alloc]initWithRed:0.2 green:0.2 blue:0.2 alpha:1.0];
-    CGFloat table_height = self.view.bounds.size.height - search_height - tab_height;
+    CGFloat table_height = self.view.bounds.size.height - search_height;
     self.table_view = [[UITableView alloc]initWithFrame:CGRectMake(0.0, search_height, self.view.frame.size.width, table_height) style:UITableViewStylePlain];
     self.table_view.delegate = self;
     self.table_view.dataSource = self;

@@ -20,6 +20,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
+    /*
     self.tab_controller = [[UITabBarController alloc]init];
     
     // create view controller and corresponding tab bar images
@@ -55,6 +56,12 @@
     application.statusBarHidden = YES;
     
     self.background_player = [[MPMusicPlayerController alloc]init];
+    */
+    
+    self.root_controller = [[SPHTabBarController alloc]init];
+    self.window.rootViewController = self.root_controller;
+    
+    
     return YES;
 }
 
