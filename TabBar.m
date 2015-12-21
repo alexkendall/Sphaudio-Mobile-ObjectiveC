@@ -28,8 +28,11 @@
         UIButton *button;
         if(i == 0)
         {
-            button = [[UIButton alloc]initWithFrame:CGRectMake(offset_x, self.view.frame.size.height - tab_height, width, tab_height)];
-            [button addTarget:self action:@selector(HandleMusic) forControlEvents:UIControlEventTouchUpInside];
+            self.music_button = [[MusicButton alloc]initWithFrame:CGRectMake(offset_x, self.view.frame.size.height - tab_height, width, tab_height)];
+            [self.music_button addTarget:self action:@selector(HandleMusic) forControlEvents:UIControlEventTouchUpInside];
+            [self.music_button set_deselected_color:[UIColor grayColor]];
+            [self.music_button set_highlight_color:[UIColor whiteColor]];
+            [self.view addSubview:self.music_button];;
         }
         else if(i == 1)
         {
@@ -58,6 +61,7 @@
     [self.settings_controller.view removeFromSuperview];
     [self.view addSubview: self.songs_controller.view];
     [self.visualizer_button deselect];
+    [self.music_button highlight];
 }
 
 -(void)HandleVisualizer
@@ -67,6 +71,7 @@
     [self.settings_controller.view removeFromSuperview];
     [self.view addSubview: self.vis_controller.view];
     [self.visualizer_button highlight];
+    [self.music_button deselect];
 }
 
 -(void)HandleSettings
@@ -76,6 +81,7 @@
     [self.songs_controller.view removeFromSuperview];
     [self.view addSubview: self.settings_controller.view];
     [self.visualizer_button deselect];
+    [self.music_button deselect];
 }
 
 -(void)drawRect:(CGRect)rect
