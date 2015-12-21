@@ -12,6 +12,7 @@
 #import "ViewController.h"
 #import "SettingsController.h"
 #import "SongController.h"
+#import "VisButton.h"
 
 @interface SPHTabBarController : UIViewController
 
@@ -21,6 +22,7 @@
 
 // properties
 @property NSMutableArray *buttons;
+@property VisButton *visualizer_button;
 
 // event handlers
 -(void)HandleMusic;

@@ -53,6 +53,8 @@
 		46DAC5F71C28767000662149 /* Device.m in Sources */ = {isa = PBXBuildFile; fileRef = 46DAC5F61C28767000662149 /* Device.m */; };
 		46DAC5FB1C2876EF00662149 /* TabBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 46DAC5FA1C2876EF00662149 /* TabBar.m */; };
 		46DAC6001C287FDA00662149 /* BaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 46DAC5FF1C287FDA00662149 /* BaseController.m */; };
+		46DAC6021C28877800662149 /* TabButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 46DAC6011C28877800662149 /* TabButton.m */; };
+		46DAC6061C288B8200662149 /* VisButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 46DAC6051C288B8200662149 /* VisButton.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -158,6 +160,10 @@
 		46DAC5FA1C2876EF00662149 /* TabBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TabBar.m; sourceTree = "<group>"; };
 		46DAC5FE1C287FCD00662149 /* BaseController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BaseController.h; sourceTree = "<group>"; };
 		46DAC5FF1C287FDA00662149 /* BaseController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BaseController.m; sourceTree = "<group>"; };
+		46DAC6011C28877800662149 /* TabButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TabButton.m; sourceTree = "<group>"; };
+		46DAC6031C28878800662149 /* TabButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TabButton.h; sourceTree = "<group>"; };
+		46DAC6041C288B2300662149 /* VisButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VisButton.h; sourceTree = "<group>"; };
+		46DAC6051C288B8200662149 /* VisButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VisButton.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -287,6 +293,10 @@
 				461E0C291C24C58E00986950 /* SPHNode.m */,
 				46DAC5F91C2876E300662149 /* TabBar.h */,
 				46DAC5FA1C2876EF00662149 /* TabBar.m */,
+				46DAC6011C28877800662149 /* TabButton.m */,
+				46DAC6031C28878800662149 /* TabButton.h */,
+				46DAC6041C288B2300662149 /* VisButton.h */,
+				46DAC6051C288B8200662149 /* VisButton.m */,
 			);
 			name = Graphics;
 			path = ..;
@@ -540,6 +550,7 @@
 				461E0C731C24C67200986950 /* TPCircularBuffer.c in Sources */,
 				461E0C701C24C67200986950 /* EZOutput.m in Sources */,
 				461E0C681C24C67200986950 /* EZAudioFile.m in Sources */,
+				46DAC6021C28877800662149 /* TabButton.m in Sources */,
 				46DAC5FB1C2876EF00662149 /* TabBar.m in Sources */,
 				46DAC6001C287FDA00662149 /* BaseController.m in Sources */,
 				461E0C2A1C24C58E00986950 /* SPHNode.m in Sources */,
@@ -550,6 +561,7 @@
 				468674211C2763A40017E243 /* Icon.m in Sources */,
 				461E0C6C1C24C67200986950 /* EZAudioPlot.m in Sources */,
 				461E0C6F1C24C67200986950 /* EZMicrophone.m in Sources */,
+				46DAC6061C288B8200662149 /* VisButton.m in Sources */,
 				461E0C671C24C67200986950 /* EZAudioFFT.m in Sources */,
 				461E0C691C24C67200986950 /* EZAudioFloatConverter.m in Sources */,
 				46DAC5F71C28767000662149 /* Device.m in Sources */,

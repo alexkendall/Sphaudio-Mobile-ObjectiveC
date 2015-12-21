@@ -25,21 +25,24 @@
     for(int i = 0; i < 3; ++i)
     {
         CGFloat offset_x = width * i;
-        UIButton *button = [[UIButton alloc]initWithFrame:CGRectMake(offset_x, self.view.frame.size.height - tab_height, width, tab_height)];
+        UIButton *button;
         if(i == 0)
         {
+            button = [[UIButton alloc]initWithFrame:CGRectMake(offset_x, self.view.frame.size.height - tab_height, width, tab_height)];
             [button addTarget:self action:@selector(HandleMusic) forControlEvents:UIControlEventTouchUpInside];
-            button.backgroundColor = [UIColor yellowColor];
         }
         else if(i == 1)
         {
-            [button addTarget:self action:@selector(HandleVisualizer) forControlEvents:UIControlEventTouchUpInside];
-            button.backgroundColor = [UIColor orangeColor];
+            self.visualizer_button = [[VisButton alloc]initWithFrame:CGRectMake(offset_x, self.view.frame.size.height - tab_height, width, tab_height)];
+            [self.visualizer_button addTarget:self action:@selector(HandleVisualizer) forControlEvents:UIControlEventTouchUpInside];
+            [self.visualizer_button set_deselected_color:[UIColor grayColor]];
+            [self.visualizer_button set_highlight_color:[UIColor whiteColor]];
+            [self.view addSubview:self.visualizer_button];;
         }
         else
         {
+            button = [[UIButton alloc]initWithFrame:CGRectMake(offset_x, self.view.frame.size.height - tab_height, width, tab_height)];
             [button addTarget:self action:@selector(HandleSettings) forControlEvents:UIControlEventTouchUpInside];
-            button.backgroundColor = [UIColor redColor];
         }
         [self.view addSubview:button];
     }
@@ -54,6 +57,7 @@
     [self.vis_controller.view removeFromSuperview];
     [self.settings_controller.view removeFromSuperview];
     [self.view addSubview: self.songs_controller.view];
+    [self.visualizer_button deselect];
 }
 
 -(void)HandleVisualizer
@@ -62,6 +66,7 @@
     [self.songs_controller.view removeFromSuperview];
     [self.settings_controller.view removeFromSuperview];
     [self.view addSubview: self.vis_controller.view];
+    [self.visualizer_button highlight];
 }
 
 -(void)HandleSettings
@@ -70,6 +75,7 @@
     [self.vis_controller.view removeFromSuperview];
     [self.songs_controller.view removeFromSuperview];
     [self.view addSubview: self.settings_controller.view];
+    [self.visualizer_button deselect];
 }
 
 -(void)drawRect:(CGRect)rect
