@@ -182,6 +182,45 @@
     [self.seven_switch addTarget:self action:@selector(set_7x7) forControlEvents:UIControlEventTouchUpInside];
     
     
+    // device specific text sizes
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    if(app_delegate.device == iPhone5 || app_delegate.device == iPhone4)
+    {
+        self.five_label.font = [UIFont systemFontOfSize:14.0];
+        self.seven_label.font = [UIFont systemFontOfSize:14.0];
+        self.shininess_label.font = [UIFont systemFontOfSize:14.0];
+        self.cool_theme.font = [UIFont systemFontOfSize:14.0];
+        self.warm_theme.font = [UIFont systemFontOfSize:14.0];
+        self.default_label.font = [UIFont systemFontOfSize:14.0];
+    }
+    else if(app_delegate.device == iPhone6)
+    {
+        self.five_label.font = [UIFont systemFontOfSize:15.0];
+        self.seven_label.font = [UIFont systemFontOfSize:15.0];
+        self.shininess_label.font = [UIFont systemFontOfSize:15.0];
+        self.cool_theme.font = [UIFont systemFontOfSize:15.0];
+        self.warm_theme.font = [UIFont systemFontOfSize:15.0];
+        self.default_label.font = [UIFont systemFontOfSize:15.0];
+    }
+    else if(app_delegate.device == iPhone6Plus)
+    {
+        self.five_label.font = [UIFont systemFontOfSize:17.0];
+        self.seven_label.font = [UIFont systemFontOfSize:17.0];
+        self.shininess_label.font = [UIFont systemFontOfSize:17.0];
+        self.cool_theme.font = [UIFont systemFontOfSize:17.0];
+        self.warm_theme.font = [UIFont systemFontOfSize:17.0];
+        self.default_label.font = [UIFont systemFontOfSize:17.0];
+    }
+    else if(app_delegate.device == iPad)
+    {
+        self.five_label.font = [UIFont systemFontOfSize:19.0];
+        self.seven_label.font = [UIFont systemFontOfSize:19.0];
+        self.shininess_label.font = [UIFont systemFontOfSize:19.0];
+        self.cool_theme.font = [UIFont systemFontOfSize:19.0];
+        self.warm_theme.font = [UIFont systemFontOfSize:19.0];
+        self.default_label.font = [UIFont systemFontOfSize:19.0];
+    }
+    
     // fetch settings from storage
     self.num_spheres = get_num_spheres();
     self.theme = get_theme();

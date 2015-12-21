@@ -20,7 +20,8 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
-    /*
+    self.device = getDeviceInfo();
+    
     self.tab_controller = [[UITabBarController alloc]init];
     
     // create view controller and corresponding tab bar images
@@ -56,12 +57,8 @@
     application.statusBarHidden = YES;
     
     self.background_player = [[MPMusicPlayerController alloc]init];
-    */
     
-    self.root_controller = [[SPHTabBarController alloc]init];
-    self.window.rootViewController = self.root_controller;
-    
-    
+    // get device
     return YES;
 }
 
@@ -92,7 +89,7 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-
+    
     
     // if song is playing, switch players to ipods player once app goes to background such that it continues playing current song
     
@@ -101,11 +98,11 @@
         MPMediaItem *item = self.songs_controller.songs_array[self.songs_controller.song_index];
         MPMediaItemCollection *item_collection = [[MPMediaItemCollection alloc]initWithItems:@[item]];
         [self.background_player setQueueWithItemCollection:item_collection];
-
+        
         // seek to correct time
         NSTimeInterval current_time = self.vis_controller.player.currentTime;
         self.background_player.currentPlaybackTime = current_time;
-    
+        
         [self.vis_controller pause];
         [self.background_player play];
         self.was_playing = true;
@@ -120,41 +117,41 @@
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
     
-        // get current playing song and time to seek to
-        NSTimeInterval current_time = self.background_player.currentPlaybackTime;
-        MPMediaItem* current_item = self.background_player.nowPlayingItem;
-        NSURL *url = [current_item valueForKey:MPMediaItemPropertyAssetURL];
-        self.vis_controller.audio_file = [[EZAudioFile alloc]initWithURL:url];
-        self.vis_controller.player.audioFile = self.vis_controller.audio_file;
+    // get current playing song and time to seek to
+    NSTimeInterval current_time = self.background_player.currentPlaybackTime;
+    MPMediaItem* current_item = self.background_player.nowPlayingItem;
+    NSURL *url = [current_item valueForKey:MPMediaItemPropertyAssetURL];
+    self.vis_controller.audio_file = [[EZAudioFile alloc]initWithURL:url];
+    self.vis_controller.player.audioFile = self.vis_controller.audio_file;
     
-        // update song labels
-        [self.vis_controller setSongTitle:current_item.title withArtist:current_item.artist];
+    // update song labels
+    [self.vis_controller setSongTitle:current_item.title withArtist:current_item.artist];
     
-        // seek to correspoding part of song
-        self.vis_controller.seek_slider.maximumValue = self.vis_controller.audio_file.duration;
-        self.vis_controller.seek_slider.value = current_time;
-        [self.vis_controller manual_seek];
-        
-        // get and set current song index
-        NSMutableArray *songs_array = self.songs_controller.songs_array;
-        NSURL *song_url = [current_item valueForKey:MPMediaItemPropertyAssetURL];
-        int song_index = -1;
-        for(int i = 0; i < self.songs_controller.songs_array.count; ++i)
+    // seek to correspoding part of song
+    self.vis_controller.seek_slider.maximumValue = self.vis_controller.audio_file.duration;
+    self.vis_controller.seek_slider.value = current_time;
+    [self.vis_controller manual_seek];
+    
+    // get and set current song index
+    NSMutableArray *songs_array = self.songs_controller.songs_array;
+    NSURL *song_url = [current_item valueForKey:MPMediaItemPropertyAssetURL];
+    int song_index = -1;
+    for(int i = 0; i < self.songs_controller.songs_array.count; ++i)
+    {
+        NSURL *cur_url = [songs_array[i] valueForKey:MPMediaItemPropertyAssetURL];
+        if(cur_url == song_url)
         {
-            NSURL *cur_url = [songs_array[i] valueForKey:MPMediaItemPropertyAssetURL];
-            if(cur_url == song_url)
-            {
-                song_index = i;
-                break;
-            }
+            song_index = i;
+            break;
         }
-        self.songs_controller.song_index = song_index;
-        [self.background_player pause];
+    }
+    self.songs_controller.song_index = song_index;
+    [self.background_player pause];
     
-        if(self.was_playing)
-        {
-            [self.vis_controller play];
-        }
+    if(self.was_playing)
+    {
+        [self.vis_controller play];
+    }
     
     
 }

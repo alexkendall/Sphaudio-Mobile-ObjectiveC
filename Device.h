@@ -6,8 +6,13 @@
 //  Copyright © 2015 Alex Harrison. All rights reserved.
 //
 
-#ifndef Device_h
-#define Device_h
+typedef NS_ENUM(NSInteger, Device) {
+    iPhone4,
+    iPhone5,
+    iPhone6,
+    iPhone6Plus,
+    iPad
+};
 
 
-#endif /* Device_h */
+Device getDeviceInfo();

@@ -159,7 +159,6 @@
     [self.title_label setText:@"The Motion (Instrumental)"];
     [self.title_label setTextColor:[UIColor whiteColor]];
     [self.title_label setTextAlignment:NSTextAlignmentCenter];
-    self.title_label.font = [UIFont boldSystemFontOfSize:18.0];
     
     // configure song artest label
     CGFloat artist_y = title_y + 30.0;
@@ -167,7 +166,31 @@
     [self.artist_label setText:@"Drake"];
     [self.artist_label setTextColor:[UIColor whiteColor]];
     [self.artist_label setTextAlignment:NSTextAlignmentCenter];
-    self.artist_label.font = [UIFont systemFontOfSize:17.0];
+
+    
+    // set font according to device
+    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
+    if(app_delegate.device == iPhone4 || app_delegate.device == iPhone5)
+    {
+        self.title_label.font = [UIFont boldSystemFontOfSize:13.0];
+        self.artist_label.font = [UIFont systemFontOfSize:12.0];
+    }
+    else if(app_delegate.device == iPhone6)
+    {
+        self.title_label.font = [UIFont boldSystemFontOfSize:17.0];
+        self.artist_label.font = [UIFont systemFontOfSize:15.0];
+    }
+    else if(app_delegate.device == iPhone6Plus)
+    {
+        self.title_label.font = [UIFont boldSystemFontOfSize:18.0];
+        self.artist_label.font = [UIFont systemFontOfSize:16.0];
+    }
+    else if(app_delegate.device == iPad)
+    {
+        self.title_label.font = [UIFont boldSystemFontOfSize:25.0];
+        self.artist_label.font = [UIFont systemFontOfSize:23.0];
+    }
+    
     
     
     [self.super_view addSubview:self.title_label];
@@ -224,7 +247,6 @@
     self.shinny_mode = false;
     
     // load up all of systems music into queue, load first song into player
-    AppDelegate *app_delegate = [[UIApplication sharedApplication]delegate];
     SongController *song_controller = app_delegate.songs_controller;
     [song_controller.table_view reloadData];
     
@@ -243,7 +265,7 @@
     // seek slider
     CGFloat slider_width = self.view.bounds.size.width * 0.7;
     CGFloat slider_margin = (self.view.bounds.size.width - slider_width) * 0.5;
-    CGFloat slider_y = self.view.bounds.size.height * 0.8125;
+    CGFloat slider_y = self.view.bounds.size.height * 0.85;
     CGFloat slider_height = 20.0;
     self.seek_slider = [[UISlider alloc]initWithFrame:CGRectMake(slider_margin, slider_y, slider_width, slider_height)];
     [self.view addSubview:self.seek_slider];

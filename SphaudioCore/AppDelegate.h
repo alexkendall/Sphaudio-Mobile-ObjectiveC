@@ -1,3 +1,4 @@
+
 //
 //  AppDelegate.h
 //  Practice
@@ -11,7 +12,7 @@
 #include "SongController.h"
 #include "SettingsController.h"
 #include "ViewController.h"
-#include "TabBar.h"
+#include "Device.h"
 @import MediaPlayer;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
@@ -26,13 +27,12 @@
 @property ViewController* vis_controller;
 @property SettingsController* settings_controller;
 @property UITabBarController *tab_controller;
-@property SPHTabBarController *root_controller;
 
 @property int shinny_mode;
 @property int num_spheres;
 @property int theme;
 @property bool was_playing;
-
+@property Device device;
 @property MPMusicPlayerController *background_player;
 
 - (void)saveContext;
@@ -40,4 +40,3 @@
 
 
 @end
-
