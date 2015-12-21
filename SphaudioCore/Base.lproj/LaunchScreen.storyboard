@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8150" systemVersion="15A204g" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" initialViewController="01J-lp-oVM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" initialViewController="01J-lp-oVM">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8122"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -15,8 +17,36 @@
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <animations/>
+                        <subviews>
+                            <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qul-I0-LG7" userLabel="Background">
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SPHAUDIO" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bwz-tT-8ks">
+                                        <rect key="frame" x="226" y="15" width="129" height="570"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="26"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" red="0.1058823529" green="0.1058823529" blue="0.1058823529" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstItem="bwz-tT-8ks" firstAttribute="top" secondItem="qul-I0-LG7" secondAttribute="top" constant="15" id="W7P-8W-BdX"/>
+                                    <constraint firstItem="bwz-tT-8ks" firstAttribute="centerY" secondItem="qul-I0-LG7" secondAttribute="centerY" id="dAU-N7-BBx"/>
+                                    <constraint firstItem="bwz-tT-8ks" firstAttribute="centerX" secondItem="qul-I0-LG7" secondAttribute="centerX" id="i6b-or-iXH"/>
+                                </constraints>
+                            </view>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="qul-I0-LG7" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leadingMargin" constant="-20" id="3g2-Kc-8JD"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="qul-I0-LG7" secondAttribute="trailing" id="4yw-Sl-Xra"/>
+                            <constraint firstItem="xb3-aO-Qok" firstAttribute="top" secondItem="qul-I0-LG7" secondAttribute="bottom" id="BZR-E5-gp3"/>
+                            <constraint firstItem="qul-I0-LG7" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leadingMargin" id="ClW-uA-rc5"/>
+                            <constraint firstItem="qul-I0-LG7" firstAttribute="top" secondItem="Llm-lL-Icb" secondAttribute="bottom" id="Qd6-cH-ly0"/>
+                            <constraint firstItem="xb3-aO-Qok" firstAttribute="top" secondItem="qul-I0-LG7" secondAttribute="bottom" constant="-20" id="ski-zb-BLi"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="qul-I0-LG7" secondAttribute="trailing" constant="-20" id="skl-pa-63A"/>
+                            <constraint firstItem="qul-I0-LG7" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="topMargin" constant="-20" id="udX-Ed-8Bb"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>

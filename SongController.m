@@ -49,8 +49,8 @@
     self.table_view.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.table_view.backgroundColor = dark_gray;
     
-    // set song index to deslected or -1
-    self.song_index = -1;
+    // set song index at 0 to start
+    self.song_index = 0;
     
 }
 
@@ -202,10 +202,12 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath
         MPMediaItem *song = self.songs_array[i];
         NSString *artist = [song.artist lowercaseString];
         NSString *title = [song.title lowercaseString];
+        NSString *album = [song.albumTitle lowercaseString];
         NSString *search_text = [self.search_bar.text lowercaseString];
         
+        
         // check if title or artist comes up in query, if does add result to set
-        if(([title containsString:search_text]) || ([artist containsString:search_text]))
+        if(([title containsString:search_text]) || ([artist containsString:search_text]) || ([album containsString:search_text]))
         {
             [self.queried_refs addObject:song];
         }
