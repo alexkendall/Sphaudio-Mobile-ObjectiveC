@@ -316,10 +316,13 @@
         MPMediaItem *selected_song = song_controller.songs_array[song_controller.song_index];
         NSURL *song_url = [selected_song valueForKey:MPMediaItemPropertyAssetURL];
         self.audio_file = [[EZAudioFile alloc]initWithURL:song_url];
-        [self setSongTitle:selected_song.title withArtist:selected_song.artist];
-        [self.title_label setNeedsDisplay];
-        [self.artist_label setNeedsDisplay];
-        
+
+        // flush display of new song title and artist
+        double delayInSeconds = 0.01;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds *     NSEC_PER_SEC));
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self setSongTitle:selected_song.title withArtist:selected_song.artist];
+        });
         
         // play song
         self.player.audioFile = self.audio_file;
@@ -355,9 +358,13 @@
         MPMediaItem *selected_song = song_controller.songs_array[song_controller.song_index];
         NSURL *song_url = [selected_song valueForKey:MPMediaItemPropertyAssetURL];
         self.audio_file = [[EZAudioFile alloc]initWithURL:song_url];
-        [self setSongTitle:selected_song.title withArtist:selected_song.artist];
-        [self.title_label setNeedsDisplay];
-        [self.artist_label setNeedsDisplay];
+        
+        // flush display of new song title and artist
+        double delayInSeconds = 0.01;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds *     NSEC_PER_SEC));
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self setSongTitle:selected_song.title withArtist:selected_song.artist];
+        });
         
         // play song
         self.player.audioFile = self.audio_file;

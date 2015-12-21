@@ -120,6 +120,9 @@
         self.vis_controller.audio_file = [[EZAudioFile alloc]initWithURL:url];
         self.vis_controller.player.audioFile = self.vis_controller.audio_file;
     
+        // update song labels
+        [self.vis_controller setSongTitle:current_item.title withArtist:current_item.artist];
+    
         // seek to correspoding part of song
         self.vis_controller.seek_slider.maximumValue = self.vis_controller.audio_file.duration;
         self.vis_controller.seek_slider.value = current_time;
